@@ -67,7 +67,9 @@ export const constants = {
       isPopular: process.env.NEXT_PUBLIC_PREMIUM_PKG_IS_POPULAR === "true",
       isPickUp: process.env.NEXT_PUBLIC_PREMIUM_PKG_IS_PICKUP === "true",
     },
-  ] satisfies ProductPackage[],
+  ]
+    .filter((pkg) => pkg.name && pkg.name !== "undefined")
+    .filter((pkg) => pkg.priceCents > 0) satisfies ProductPackage[],
   perAdditionalPhotoPriceInCent: Number(
     `${process.env.NEXT_PUBLIC_PER_ADDITIONAL_PHOTO_PRICE_IN_CENT}`,
   ),

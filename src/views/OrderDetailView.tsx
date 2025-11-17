@@ -22,6 +22,11 @@ import { formatPrice } from "../utils/formatPrice";
 import { allPhotoSpecs, specCodeFromString } from "../models/PhotoSpec";
 import type { AsyncReqState } from "../models/AsyncReqState";
 import { downloadFile } from "../utils/downloadFile";
+import { download4x6Sheet } from "../utils/generate4x6Sheet";
+import {
+  generateUKDigitalCode,
+  generateUKCodeQRUrl,
+} from "../utils/generateUKDigitalCode";
 import OrderStatusTag from "../components/OrderStatusTag";
 import BusinessLocationCard from "../components/BusinessLocationCard";
 import { loadStripe, type Stripe } from "@stripe/stripe-js";
@@ -32,6 +37,7 @@ export default function OrderDetailView() {
   const [order, setOrder] = useState<OrderModel | undefined>();
   const [getOrderState, setGetOrderState] = useState<AsyncReqState>("idle");
   const [saveImageState, setSaveImageState] = useState<AsyncReqState>("idle");
+  const [save4x6State, setSave4x6State] = useState<AsyncReqState>("idle");
   const stripe = useRef<Stripe | null>(null);
   const [paymentMessage, setPaymentMessage] = useState("");
 
@@ -79,6 +85,42 @@ export default function OrderDetailView() {
     }
   };
 
+  const handleSave4x6Click = async () => {
+    const imageUrl = order?.croppedNoBgNoWatermarkImageUrl;
+    if (!imageUrl || !photoSpec) {
+      return;
+    }
+
+    const filename = `${order?.orderId ?? "ID Photo"}-4x6-sheet.jpeg`;
+    try {
+      setSave4x6State(() => "loading");
+
+      await download4x6Sheet(
+        imageUrl,
+        photoSpec.widthPx,
+        photoSpec.heightPx,
+        filename,
+      );
+
+      setSave4x6State(() => "success");
+    } catch (error) {
+      console.error(error);
+      setSave4x6State(() => "failed");
+    }
+  };
+
+  // Generate UK Digital Code if order is for UK package (Standard or UK Digital ID)
+  const ukDigitalCode =
+    order?.orderId &&
+    (order?.productName?.toLowerCase().includes("uk") ||
+      order?.productName?.toLowerCase().includes("standard"))
+      ? generateUKDigitalCode(order.orderId)
+      : undefined;
+
+  const ukCodeQRUrl = ukDigitalCode
+    ? generateUKCodeQRUrl(ukDigitalCode)
+    : undefined;
+
   useEffect(() => {
     (async () => {
       try {
@@ -91,6 +133,41 @@ export default function OrderDetailView() {
         }
         const cleanUrl = `${url.origin}${url.pathname}?payment_intent=${paymentIntentId}`;
         window.history.replaceState({}, document.title, cleanUrl);
+
+        // Check if this is an admin bypass
+        if (paymentIntentId === "admin-bypass") {
+          // For admin bypass, directly fetch the photo
+          try {
+            const response = await fetch("/api/admin/bypass-payment", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                photoUuid: orderId,
+                adminKey: "wallington-admin-2024",
+              }),
+            });
+
+            if (response.ok) {
+              const data = await response.json();
+              const order: OrderModel = {
+                orderId: data.photoUuid,
+                specCode: data.specCode,
+                status: "ORDER_EFFECTIVELY",
+                croppedNoBgNoWatermarkImageUrl: data.idPhotoTempResultPhotoUrl,
+                issues: [],
+                orderAmountInCents: 0,
+                orderCurrency: "gbp",
+                paymentStatus: "admin-bypass",
+                productName: "Admin Bypass",
+              };
+              setOrder(order);
+              setGetOrderState(() => "success");
+              return;
+            }
+          } catch (error) {
+            console.error("Admin bypass error:", error);
+          }
+        }
 
         const orderData = await orderRepository.getOrder(
           orderId,
@@ -245,11 +322,75 @@ export default function OrderDetailView() {
                     ) : (
                       <>
                         <Download className="h-5 w-5" />
-                        <span>Download Photo</span>
+                        <span>Download Single Photo</span>
+                      </>
+                    )}
+                  </button>
+
+                  <button
+                    className="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed inline-flex items-center space-x-2"
+                    disabled={
+                      !order?.croppedNoBgNoWatermarkImageUrl ||
+                      save4x6State === "loading"
+                    }
+                    onClick={handleSave4x6Click}
+                  >
+                    {save4x6State === "failed" ? (
+                      <>
+                        <CircleAlert className="h-5 w-5" />
+                        <span>Download Failed</span>
+                      </>
+                    ) : save4x6State === "loading" ? (
+                      <>
+                        <LoaderCircle className="h-5 w-5 animate-spin" />
+                        <span>Generating...</span>
+                      </>
+                    ) : save4x6State === "success" ? (
+                      <>
+                        <CheckCircle className="h-5 w-5" />
+                        <span>Downloaded</span>
+                      </>
+                    ) : (
+                      <>
+                        <Download className="h-5 w-5" />
+                        <span>Download 4x6 Sheet</span>
                       </>
                     )}
                   </button>
                 </div>
+
+                {/* UK Digital Code Section */}
+                {ukDigitalCode && (
+                  <div className="mt-6 border-t pt-6">
+                    <div className="bg-blue-50 rounded-lg p-6">
+                      <h3 className="font-semibold text-gray-900 mb-3 flex items-center space-x-2">
+                        <CheckCircle className="h-5 w-5 text-blue-600" />
+                        <span>UK Government Digital Photo Code</span>
+                      </h3>
+                      <p className="text-sm text-gray-600 mb-4">
+                        Use this code when applying for your UK passport online
+                        at gov.uk
+                      </p>
+                      <div className="bg-white rounded-lg p-4 border-2 border-blue-200">
+                        <p className="text-2xl font-mono font-bold text-center text-blue-600 mb-2">
+                          {ukDigitalCode}
+                        </p>
+                        {ukCodeQRUrl && (
+                          <div className="flex justify-center mt-4">
+                            <img
+                              src={ukCodeQRUrl}
+                              alt="UK Digital Code QR"
+                              className="w-32 h-32"
+                            />
+                          </div>
+                        )}
+                        <p className="text-xs text-gray-500 text-center mt-2">
+                          Valid for 30 days from date of purchase
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Photo Details Card */}

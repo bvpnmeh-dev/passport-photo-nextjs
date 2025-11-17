@@ -154,7 +154,7 @@ function HomeView() {
 
               <div className="space-y-3">
                 <a
-                  href="https://www.gov.uk/photos-for-passports"
+                  href="https://www.gov.uk/apply-renew-passport"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all group"
