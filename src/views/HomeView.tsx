@@ -1,220 +1,442 @@
 "use client";
 
-import Image from "next/image";
-import {
-  Camera,
-  CheckCircle,
-  Star,
-  Users,
-  Award,
-  Shield,
-  Zap,
-  Globe,
-} from "lucide-react";
+import React from "react";
 import { useRouter } from "next/navigation";
-import { constants } from "../constants";
-import BusinessLocationCard from "../components/BusinessLocationCard";
-import { formatPrice } from "../utils/formatPrice";
-import type { SpecCode } from "../models/PhotoSpec";
-import ProductPackageCard from "../components/ProductPackageCard";
-import sampleImageUrl from "../assets/20250617-135306.jpeg";
-import { useRef } from "react";
+import { Camera } from "lucide-react";
 import NavItem from "../lib/nav-item";
 
 function HomeView() {
   const router = useRouter();
-
-  const servicesSectionRef = useRef<HTMLDivElement | null>(null);
-  const pricingSectionRef = useRef<HTMLDivElement | null>(null);
-  const locationsSectionRef = useRef<HTMLDivElement | null>(null);
-  const contactSectionRef = useRef<HTMLDivElement | null>(null);
-  const productPackage = constants.productPackages[1];
-  const formattedPrice = formatPrice(
-    productPackage.priceCents,
-    productPackage.currency,
-  );
-
-  const navItems = [
-    {
-      label: "Services",
-      handler: () => {
-        servicesSectionRef.current?.scrollIntoView({ behavior: "smooth" });
-      },
-    },
-    {
-      label: "Pricing",
-      handler: () => {
-        pricingSectionRef.current?.scrollIntoView({ behavior: "smooth" });
-      },
-    },
-    {
-      label: "Locations",
-      handler: () => {
-        locationsSectionRef.current?.scrollIntoView({ behavior: "smooth" });
-      },
-    },
-    {
-      label: "Contact",
-      handler: () => {
-        contactSectionRef.current?.scrollIntoView({ behavior: "smooth" });
-      },
-    },
-  ];
-
-  const serviceItems = [
-    {
-      icon: <Globe className="h-8 w-8" />,
-      title: "US Passport Photos",
-      description:
-        'Official 2" x 2" passport photos that meet State Department requirements',
-      price: formattedPrice,
-      features: [
-        '2" x 2" size',
-        "White background",
-        "Biometric compliant",
-        "Same day pickup",
-      ],
-      specCode: "us-passport" satisfies SpecCode,
-    },
-    {
-      icon: <Award className="h-8 w-8" />,
-      title: "Visa Photos",
-      description: "Photos for visa applications to any country worldwide",
-      price: formattedPrice,
-      features: [
-        "Country-specific sizing",
-        "Professional retouching",
-        "Multiple copies",
-        "Digital delivery",
-      ],
-      specCode: "us-visa" satisfies SpecCode,
-    },
-    {
-      icon: <Users className="h-8 w-8" />,
-      title: "Green Card Photos",
-      description: "USCIS-compliant photos for permanent resident applications",
-      price: formattedPrice,
-      features: [
-        "USCIS standards",
-        "Proper lighting",
-        "Head positioning",
-        "Quality guarantee",
-      ],
-      specCode: "us-greencard" satisfies SpecCode,
-    },
-  ];
+  const [dvlaOpen, setDvlaOpen] = React.useState(false);
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header */}
-      <header className="fixed top-0 w-full bg-white/95 backdrop-blur-sm border-b border-gray-200 z-50 shadow-sm">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-3">
-              <div className="bg-blue-600 p-2 rounded-lg">
-                <Camera className="h-6 w-6 text-white" />
-              </div>
-              <span className="text-2xl font-bold text-gray-900">
-                {constants.studioName}
-              </span>
-            </div>
-            <nav className="hidden md:flex space-x-8">
-              {navItems.map((it, index) => (
-                <button
-                  key={index}
-                  className="text-gray-600 hover:text-blue-600 font-medium transition-colors"
-                  onClick={() => {
-                    it.handler();
-                  }}
-                >
-                  {it.label}
-                </button>
-              ))}
-            </nav>
-
-            <NavItem href="/make-photo">
-              <button className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors hidden md:block">
-                Make Photo Online
-              </button>
-            </NavItem>
-
-            <button className="md:hidden">
-              <div className="w-6 h-5 flex flex-col justify-between">
-                <span className="w-full h-0.5 bg-gray-700"></span>
-                <span className="w-full h-0.5 bg-gray-700"></span>
-                <span className="w-full h-0.5 bg-gray-700"></span>
-              </div>
-            </button>
+    <main className="min-h-screen bg-gray-50 text-gray-900">
+      {/* Section 1: Navigation Header */}
+      <header className="w-full bg-white shadow-sm sticky top-0 z-50">
+        <div className="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <img
+              src="/passport-logo.svg"
+              alt="Get Digital Photo Code Logo"
+              className="h-10 w-10"
+            />
+            <span className="text-lg font-semibold text-gray-900">
+              Get digital photo code
+            </span>
           </div>
+          <nav className="hidden md:flex space-x-8 text-sm font-medium">
+            <a
+              href="#services"
+              className="text-gray-700 hover:text-blue-600 transition-colors"
+            >
+              Services
+            </a>
+            <a
+              href="#pricing"
+              className="text-gray-700 hover:text-blue-600 transition-colors"
+            >
+              Pricing
+            </a>
+            <a
+              href="#location"
+              className="text-gray-700 hover:text-blue-600 transition-colors"
+            >
+              Locations
+            </a>
+            <a
+              href="#contact"
+              className="text-gray-700 hover:text-blue-600 transition-colors"
+            >
+              Contact
+            </a>
+          </nav>
+          <a href="/make-photo">
+            <button className="hidden md:block bg-blue-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-blue-700 transition-colors text-sm">
+              Make Photo Online
+            </button>
+          </a>
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="pt-16 bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 text-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <div className="flex items-center space-x-2 mb-4">
-                <div className="flex">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className="h-5 w-5 text-yellow-400 fill-current"
-                    />
-                  ))}
-                </div>
-                <span className="text-blue-100">
-                  Rated 4.9/5 by 2,500+ customers
-                </span>
-              </div>
-              <h1 className="text-4xl md:text-5xl font-bold leading-tight mb-6">
-                Professional Passport Photos
-                <span className="block text-blue-200">Ready in 10 Minutes</span>
-              </h1>
-              <p className="text-xl text-blue-100 mb-8 leading-relaxed">
-                Get government-compliant passport, visa, and ID photos with our
-                professional equipment. Guaranteed acceptance or your money
-                back.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 mb-8">
-                <NavItem
-                  href="/make-photo"
-                  className="bg-white text-blue-600 px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-50 transform hover:scale-105 transition-all duration-200 shadow-lg text-center"
-                >
-                  Create Photos Online
-                </NavItem>
-                <button className="border-2 border-white text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-white hover:text-blue-600 transition-all duration-200">
-                  Visit Our Studio
-                </button>
-              </div>
-              <div className="flex items-center space-x-8">
-                <div className="flex items-center space-x-2">
-                  <Shield className="h-5 w-5 text-blue-200" />
-                  <span className="text-blue-100">100% Guarantee</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Zap className="h-5 w-5 text-blue-200" />
-                  <span className="text-blue-100">Same Day Service</span>
-                </div>
-              </div>
+      {/* Section 2: Hero Section with Trust Metrics */}
+      <section className="bg-gradient-to-r from-blue-600 to-blue-700 text-white">
+        <div className="mx-auto max-w-7xl px-6 py-12">
+          {/* Trust Metrics Row */}
+          <div className="flex justify-center items-center gap-8 mb-6 text-sm">
+            <div className="flex items-center gap-2">
+              <span className="text-yellow-400">★★★★★</span>
+              <span>4.4/5 • 2,800+ customers</span>
             </div>
-            <div className="relative">
-              <div className="bg-white rounded-2xl shadow-2xl p-8 transform hover:scale-105 transition-transform duration-300">
-                <div className="aspect-[3/4] bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center mb-4">
-                  <div className="text-center">
-                    <Image src={sampleImageUrl} alt="Sample image" />
-                    {/* <Camera className="h-16 w-16 text-gray-400 mx-auto mb-2" />
-                    <p className="text-gray-500 font-medium">Professional Quality</p>
-                    <p className="text-gray-400 text-sm">2" x 2" Passport Photo</p> */}
+            <div className="flex items-center gap-2">
+              <span className="text-white">✓</span>
+              <span>98% approved</span>
+            </div>
+          </div>
+
+          {/* Main Headline */}
+          <h1 className="text-4xl md:text-5xl font-extrabold mb-8 text-center">
+            UK HMPO Compliant Passport Photos
+          </h1>
+
+          {/* Four-Step Process Flow */}
+          <div className="flex flex-wrap items-center justify-center gap-4 mb-12 max-w-6xl mx-auto">
+            {[
+              { num: 1, text: "1. Upload a photo" },
+              { num: 2, text: "2. Photo approved\ncompliant" },
+              { num: 3, text: "3. Download +\ndigital code" },
+              { num: 4, text: "4. Done" },
+            ].map((step, i) => (
+              <React.Fragment key={i}>
+                <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-5 py-3 rounded-lg">
+                  <div className="w-8 h-8 rounded-full bg-white text-blue-600 flex items-center justify-center font-bold flex-shrink-0">
+                    ✓
+                  </div>
+                  <div className="text-sm font-medium whitespace-pre-line">
+                    {step.text}
                   </div>
                 </div>
-                <div className="text-center">
-                  <p className="text-gray-600 font-semibold">
-                    Government Compliant
-                  </p>
-                  <p className="text-gray-500 text-sm">
-                    Meets all official requirements
-                  </p>
+              </React.Fragment>
+            ))}
+          </div>
+
+          {/* Cards Row: UK Digital ID + Official Links */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-6xl mx-auto">
+            {/* UK Digital ID Card */}
+            <div className="bg-white rounded-2xl p-8 text-gray-900">
+              <div className="text-4xl font-bold mb-1">
+                £8.88
+                <span className="text-base font-normal text-gray-600 ml-2">
+                  all UK docs
+                </span>
+              </div>
+              <h3 className="text-2xl font-bold mt-3 mb-4">
+                UK Digital ID Code
+              </h3>
+
+              <ul className="space-y-2.5 mb-6">
+                <li className="flex items-center gap-2 text-sm">
+                  <span className="text-green-600 font-bold text-base">✓</span>
+                  <span>Passport • Driving Licence</span>
+                </li>
+                <li className="flex items-center gap-2 text-sm">
+                  <span className="text-green-600 font-bold text-base">✓</span>
+                  <span>Oyster Card • Travel Cards</span>
+                </li>
+                <li className="flex items-center gap-2 text-sm">
+                  <span className="text-green-600 font-bold text-base">✓</span>
+                  <span>Blue Badge • Student ID</span>
+                </li>
+                <li className="flex items-center gap-2 text-sm">
+                  <span className="text-green-600 font-bold text-base">✓</span>
+                  <span>HMPO/DVLA compliant</span>
+                </li>
+              </ul>
+
+              <button
+                onClick={() => router.push("/make-photo?type=uk")}
+                className="w-full bg-green-600 text-white py-3.5 rounded-lg font-bold hover:bg-green-700 transition-colors mb-2"
+              >
+                Choose UK Digital ID
+              </button>
+              <p className="text-xs text-gray-500 text-center">
+                Complete digital solution for all UK documents
+              </p>
+            </div>
+
+            {/* Official Links Card */}
+            <div className="bg-white rounded-2xl p-8 text-gray-900">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold">UK Government Resources</h3>
+                <span className="text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-semibold">
+                  Official Links
+                </span>
+              </div>
+
+              <div className="space-y-3">
+                <a
+                  href="https://www.gov.uk/photos-for-passports"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all group"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-green-700 bg-green-100 px-2 py-0.5 rounded">
+                      HMPO
+                    </span>
+                    <span className="text-sm font-medium">Passport Photos</span>
+                  </div>
+                  <span className="text-gray-400 group-hover:text-blue-600">
+                    →
+                  </span>
+                </a>
+
+                <a
+                  href="https://www.gov.uk/apply-renew-passport"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all group"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-purple-700 bg-purple-100 px-2 py-0.5 rounded">
+                      DVLA
+                    </span>
+                    <span className="text-sm font-medium">Licence Photos</span>
+                  </div>
+                  <span className="text-gray-400 group-hover:text-blue-600">
+                    →
+                  </span>
+                </a>
+
+                <a
+                  href="https://www.gov.uk/apply-blue-badge"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all group"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded">
+                      BADGE
+                    </span>
+                    <span className="text-sm font-medium">Blue Badge</span>
+                  </div>
+                  <span className="text-gray-400 group-hover:text-blue-600">
+                    →
+                  </span>
+                </a>
+
+                <a
+                  href="https://www.dfa.ie/passports/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all group"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-orange-700 bg-orange-100 px-2 py-0.5 rounded">
+                      IRE
+                    </span>
+                    <span className="text-sm font-medium">Irish Passport</span>
+                  </div>
+                  <span className="text-gray-400 group-hover:text-blue-600">
+                    →
+                  </span>
+                </a>
+
+                <a
+                  href="https://www.gov.uk/government/organisations/hm-passport-office"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all group"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-gray-700 bg-gray-100 px-2 py-0.5 rounded">
+                      GOV
+                    </span>
+                    <span className="text-sm font-medium">HMPO Main</span>
+                  </div>
+                  <span className="text-gray-400 group-hover:text-blue-600">
+                    →
+                  </span>
+                </a>
+              </div>
+
+              <p className="text-xs text-gray-500 mt-4 text-center">
+                Verify requirements directly from government sources
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Section 4: Pricing Cards - International & Multi-Country */}
+      <section id="pricing" className="bg-white py-16">
+        <div className="mx-auto max-w-7xl px-6">
+          {/* Top Trust Bar */}
+          <div className="bg-blue-600 text-white rounded-lg py-3.5 mb-12 flex justify-center items-center gap-10 text-sm font-medium">
+            <div className="flex items-center gap-2">
+              <span className="text-xl">🏛</span>
+              <span>98% Approved</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xl">✓</span>
+              <span>Same Day Ready</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xl">🏆</span>
+              <span>Gov Compliant</span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {/* Card 1: International (Most Popular) */}
+            <div className="border-2 border-blue-500 rounded-2xl bg-white p-8 shadow-lg relative">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-5 py-1.5 rounded-full text-xs font-bold">
+                Most Popular
+              </div>
+
+              <div className="text-4xl font-bold text-gray-900 mb-1">
+                £8.88
+                <span className="text-base font-normal text-gray-600 ml-2">
+                  any country
+                </span>
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mt-3 mb-6">
+                International
+              </h3>
+
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-center gap-2">
+                  <span className="text-green-600 font-bold text-lg">✓</span>
+                  <span className="text-gray-700">200+ countries</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-green-600 font-bold text-lg">✓</span>
+                  <span className="text-gray-700">Government compliant</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-green-600 font-bold text-lg">✓</span>
+                  <span className="text-gray-700">Digital delivery</span>
+                </li>
+              </ul>
+
+              <button
+                onClick={() => router.push("/make-photo?type=international")}
+                className="w-full bg-blue-600 text-white py-3.5 rounded-lg font-bold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+              >
+                <span className="text-lg">🌐</span>
+                Select Country
+              </button>
+            </div>
+
+            {/* Card 2: Multi-Country */}
+            <div className="border-2 border-blue-500 rounded-2xl bg-white p-8 shadow-sm">
+              <div className="text-4xl font-bold text-gray-900 mb-1">
+                £15.20
+                <span className="text-base font-normal text-gray-600 ml-2">
+                  2 countries
+                </span>
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mt-3 mb-6">
+                Multi-Country
+              </h3>
+
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-center gap-2">
+                  <span className="text-green-600 font-bold text-lg">✓</span>
+                  <span className="text-gray-700">2 different countries</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-green-600 font-bold text-lg">✓</span>
+                  <span className="text-gray-700">HMPO + International</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <span className="text-green-600 font-bold text-lg">✓</span>
+                  <span className="text-gray-700">98% approved</span>
+                </li>
+              </ul>
+
+              <button
+                onClick={() => router.push("/make-photo?type=multi")}
+                className="w-full bg-blue-600 text-white py-3.5 rounded-lg font-bold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+              >
+                <span className="text-lg">🌐</span>
+                Choose Multi
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Section 7: Location & Contact */}
+      <section id="location" className="bg-white py-16">
+        <div className="mx-auto max-w-4xl px-6">
+          <h2 className="text-3xl font-bold text-gray-900 mb-10 text-center">
+            Location
+          </h2>
+
+          <div className="bg-white border border-gray-200 rounded-xl p-8 space-y-6">
+            {/* Email */}
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <span className="text-blue-600 text-xl">📧</span>
+              </div>
+              <div>
+                <div className="font-bold text-gray-900 mb-1">Email</div>
+                <a
+                  href="mailto:wallington.cameras@yahoo.com"
+                  className="text-gray-700 hover:text-blue-600 transition-colors"
+                >
+                  wallington.cameras@yahoo.com
+                </a>
+              </div>
+            </div>
+
+            {/* Hours */}
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <span className="text-blue-600 text-xl">🕐</span>
+              </div>
+              <div>
+                <div className="font-bold text-gray-900 mb-1">Hours</div>
+                <div className="text-gray-700">
+                  Check for availability • Wheelchair accessible
+                </div>
+              </div>
+            </div>
+
+            {/* Directions */}
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <span className="text-blue-600 text-xl">📍</span>
+              </div>
+              <div>
+                <div className="font-bold text-gray-900 mb-1">Directions</div>
+                <a
+                  href="https://maps.google.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline"
+                >
+                  Open in Google Maps →
+                </a>
+              </div>
+            </div>
+
+            {/* Website */}
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <span className="text-blue-600 text-xl">🌐</span>
+              </div>
+              <div>
+                <div className="font-bold text-gray-900 mb-1">Website</div>
+                <a
+                  href="https://www.photocode.online"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline"
+                >
+                  www.photocode.online →
+                </a>
+              </div>
+            </div>
+
+            {/* QR Code */}
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <span className="text-blue-600 text-xl">▣</span>
+              </div>
+              <div className="flex-1">
+                <div className="font-bold text-gray-900 mb-3">QR Code</div>
+                <div className="inline-block border-2 border-gray-300 rounded-lg p-4 bg-white">
+                  <img
+                    src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=https://www.photocode.online"
+                    alt="QR Code for www.photocode.online"
+                    width="160"
+                    height="160"
+                    className="rounded"
+                  />
+                  <div className="text-center text-xs text-gray-600 mt-2">
+                    Scan for website access
+                  </div>
                 </div>
               </div>
             </div>
@@ -222,295 +444,144 @@ function HomeView() {
         </div>
       </section>
 
-      {/* Services Section */}
-      <section ref={servicesSectionRef} className="py-20 bg-gray-50">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Our Photo Services
-            </h2>
-            <p className="text-xl text-gray-600">
-              Professional photos for all your official document needs
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {serviceItems.map((service, index) => (
-              <div
-                key={index}
-                className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 p-6 border border-gray-100"
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <div className="text-blue-600">{service.icon}</div>
-                  <span className="text-2xl font-bold text-blue-600">
-                    {service.price}
-                  </span>
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  {service.title}
-                </h3>
-                <p className="text-gray-600 mb-4">{service.description}</p>
-                <ul className="space-y-2 mb-6">
-                  {service.features.map((feature, idx) => (
-                    <li key={idx} className="flex items-center space-x-2">
-                      <CheckCircle className="h-4 w-4 text-green-500 flex-shrink-0" />
-                      <span className="text-sm text-gray-600">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-                <button className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
-                  Walk-ins welcome
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Why Choose Us Section */}
-      <section className="py-20 bg-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Why Choose {constants.studioName}?
-            </h2>
-            <p className="text-xl text-gray-600">
-              Professional service you can trust
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {[
-              {
-                icon: <Shield className="h-12 w-12" />,
-                title: "100% Guarantee",
-                description:
-                  "If your photos are rejected, we'll retake them for free or refund your money",
-              },
-              {
-                icon: <Zap className="h-12 w-12" />,
-                title: "10-Minute Service",
-                description:
-                  "Walk in and walk out with professional photos in just 10 minutes",
-              },
-              {
-                icon: <Award className="h-12 w-12" />,
-                title: "Government Compliant",
-                description:
-                  "All photos meet strict government standards and requirements",
-              },
-              {
-                icon: <Users className="h-12 w-12" />,
-                title: "Expert Staff",
-                description:
-                  "Trained professionals with years of experience in official photography",
-              },
-            ].map((feature, index) => (
-              <div key={index} className="text-center">
-                <div className="bg-blue-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
-                  <div className="text-blue-600">{feature.icon}</div>
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  {feature.title}
-                </h3>
-                <p className="text-gray-600">{feature.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing Section */}
-      <section ref={pricingSectionRef} className="py-20 bg-gray-50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Simple, Transparent Pricing
-            </h2>
-            <p className="text-xl text-gray-600">
-              No hidden fees, no surprises
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {constants.productPackages.map((pkg) => (
-              <ProductPackageCard
-                key={pkg.id}
-                pkg={pkg}
-                isSelected={pkg.isPopular}
-                onBuyClick={(pkg) => {
-                  router.push(`/make-photo?pkgId=${pkg.id}`);
-                }}
-              />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Locations Section */}
-      <section ref={locationsSectionRef} className="py-20 bg-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Visit Our Locations
-            </h2>
-          </div>
-
-          <div className="flex justify-center">
-            {constants.businessLocations.map((loc) => (
-              <BusinessLocationCard key={loc.address} location={loc} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-20 bg-blue-600 text-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      {/* Section 8: CTA Section */}
+      <section className="bg-gradient-to-r from-blue-600 to-blue-700 text-white py-20">
+        <div className="mx-auto max-w-4xl px-6 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             Ready to Get Your Photos?
           </h2>
-          <p className="text-xl text-blue-100 mb-8">
+          <p className="text-xl text-blue-100 mb-8 leading-relaxed">
             Don't wait in long lines at the post office. Get professional
             passport photos in minutes.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <NavItem
-              href="/make-photo"
-              className="bg-white text-blue-600 px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition-colors text-center"
-            >
-              Create Photos Online
-            </NavItem>
-            <button className="border-2 border-white text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-white hover:text-blue-600 transition-colors">
-              Find a Location
-            </button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+            <a href="/make-photo">
+              <button className="bg-white text-blue-600 px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition-colors shadow-lg">
+                Create Photos Online
+              </button>
+            </a>
+            <a href="#location">
+              <button className="border-2 border-white text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-white hover:text-blue-600 transition-colors">
+                Find a Location
+              </button>
+            </a>
           </div>
 
-          <div className="mt-8 text-blue-100">
-            <p>
-              Questions? Call us at{" "}
-              <span className="font-semibold">
-                {constants.businessLocations[0]?.email}
-              </span>
-            </p>
+          <div className="text-blue-100">
+            Questions? Call us at{" "}
+            <a
+              href="mailto:wallington.cameras@yahoo.com"
+              className="font-semibold hover:underline"
+            >
+              wallington.cameras@yahoo.com
+            </a>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer ref={contactSectionRef} className="bg-gray-900 text-white py-12">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div className="md:col-span-2">
-              <div className="flex items-center space-x-3 mb-4">
-                <div className="bg-blue-600 p-2 rounded-lg">
-                  <Camera className="h-6 w-6 text-white" />
-                </div>
-                <span className="text-xl font-bold">
-                  {constants.studioName}
-                </span>
-              </div>
-              <p className="text-gray-400 leading-relaxed mb-4">
-                Professional passport and ID photo services with guaranteed
-                government compliance. Serving New York City with fast, reliable
-                service since 2015.
-              </p>
-              <div className="flex space-x-4">
-                <div className="flex">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className="h-4 w-4 text-yellow-400 fill-current"
-                    />
-                  ))}
-                </div>
-                <span className="text-gray-400 text-sm">
-                  4.9/5 from 2,500+ reviews
-                </span>
-              </div>
+      {/* Section 9: About/Privacy Section */}
+      <section className="bg-gray-900 text-white py-16">
+        <div className="mx-auto max-w-4xl px-6">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="bg-blue-600 p-2.5 rounded-lg">
+              <Camera className="h-6 w-6 text-white" />
             </div>
+            <h3 className="text-2xl font-bold">Get Digital Photo Code</h3>
+          </div>
+          <p className="text-gray-300 leading-relaxed mb-8">
+            We specialize in secure digital photo processing with complete
+            privacy protection. Your photos are processed instantly and securely
+            deleted from our servers after delivery. We never store, share, or
+            use your personal photos for any purpose beyond creating your
+            official document images.
+          </p>
+          <div className="flex items-center gap-2 text-yellow-400">
+            <span className="text-2xl">★★★★★</span>
+            <span className="text-white ml-2">4.4/5 from 2,800+ reviews</span>
+          </div>
+        </div>
+      </section>
 
+      {/* Section 10: Footer */}
+      <footer
+        id="contact"
+        className="bg-gray-900 border-t border-gray-800 text-white"
+      >
+        <div className="mx-auto max-w-7xl px-6 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-8">
+            {/* Left: Privacy & Security */}
             <div>
-              <h4 className="font-semibold mb-4">Services</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Passport Photos
-                  </a>
+              <h4 className="font-bold text-lg mb-4">Privacy & Security</h4>
+              <ul className="space-y-2.5 text-sm text-gray-300">
+                <li className="flex items-center gap-2">
+                  <span className="text-green-400 text-base">🔒</span>
+                  Secure Photo Processing
                 </li>
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Visa Photos
-                  </a>
+                <li className="flex items-center gap-2">
+                  <span className="text-green-400 text-base">📦</span>
+                  Auto-Delete After Delivery
                 </li>
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Driver's License
-                  </a>
+                <li className="flex items-center gap-2">
+                  <span className="text-green-400 text-base">🚫</span>
+                  No Photo Storage Policy
                 </li>
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Green Card Photos
-                  </a>
+                <li className="flex items-center gap-2">
+                  <span className="text-green-400 text-base">✓</span>
+                  GDPR Compliant
                 </li>
-                <li>
-                  <a href="#" className="hover:text-white transition-colors">
-                    Professional Headshots
-                  </a>
+                <li className="flex items-center gap-2">
+                  <span className="text-green-400 text-base">🛡</span>
+                  Privacy Protection
                 </li>
               </ul>
             </div>
 
+            {/* Right: Contact */}
             <div>
-              <h4 className="font-semibold mb-4">Contact Info</h4>
-              <ul className="space-y-2 text-gray-400">
-                {constants.businessLocations.map((loc) => (
-                  <li key={loc.address}>{`${loc.address}: ${loc.email}`}</li>
-                ))}
-                <li>Open 7 days a week</li>
-              </ul>
+              <h4 className="font-bold text-lg mb-4">Contact</h4>
+              <div className="space-y-2.5 text-sm text-gray-300">
+                <a
+                  href="mailto:wallington.cameras@yahoo.com"
+                  className="block hover:text-white transition-colors"
+                >
+                  wallington.cameras@yahoo.com
+                </a>
+                <a
+                  href="https://www.photocode.online"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block hover:text-white transition-colors"
+                >
+                  www.photocode.online
+                </a>
+                <div className="text-gray-400 pt-2">
+                  Digital Service Available 24/7
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
-            <div className="flex flex-col items-center md:items-start gap-2">
-              <p className="text-gray-400">
-                &copy; 2024 {constants.studioName}. All rights reserved.
-              </p>
-              <a
-                href="https://idphoto.ai"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gray-400 hover:text-white transition-colors text-sm"
-              >
-                Power by IdPhoto.AI - Passport Photo API provider.
-              </a>
-            </div>
-            <div className="flex space-x-6 mt-4 md:mt-0">
-              <a
-                href="#"
-                className="text-gray-400 hover:text-white transition-colors"
-              >
-                Privacy Policy
-              </a>
-              <a
-                href="#"
-                className="text-gray-400 hover:text-white transition-colors"
-              >
-                Terms of Service
-              </a>
-              <a
-                href="#"
-                className="text-gray-400 hover:text-white transition-colors"
-              >
-                Refund Policy
-              </a>
+          {/* Bottom Bar */}
+          <div className="border-t border-gray-800 pt-8">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-400">
+              <div>© 2024 Get digital photo code. All rights reserved.</div>
+              <div className="flex gap-6">
+                <a href="#" className="hover:text-white transition-colors">
+                  Privacy Policy
+                </a>
+                <a href="#" className="hover:text-white transition-colors">
+                  Terms of Service
+                </a>
+                <a href="#" className="hover:text-white transition-colors">
+                  Refund Policy
+                </a>
+              </div>
             </div>
           </div>
         </div>
       </footer>
-    </div>
+    </main>
   );
 }
 
