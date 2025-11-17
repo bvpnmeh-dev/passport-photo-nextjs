@@ -1,16 +1,23 @@
 "use client";
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 
 const CREDENTIALS = [
   { user: "wallington.cameras@yahoo.com", pass: "Admin08" },
   { user: "wallington.cameras@gmail.com", pass: "Admin28" },
 ];
 
+const ADMIN_KEY = "wallington-admin-2024";
+
 export default function AdminPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loggedIn, setLoggedIn] = useState(false);
+  const [photoUuid, setPhotoUuid] = useState("");
+  const [bypassMessage, setBypassMessage] = useState("");
+  const [isBypassing, setIsBypassing] = useState(false);
 
   function tryLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -20,7 +27,6 @@ export default function AdminPage() {
     if (found) {
       setLoggedIn(true);
       setError(null);
-      // Simple client-side flag; in a real app use secure auth
       localStorage.setItem("admin-auth", "1");
     } else {
       setError("Invalid credentials");
@@ -30,6 +36,40 @@ export default function AdminPage() {
   function logout() {
     setLoggedIn(false);
     localStorage.removeItem("admin-auth");
+  }
+
+  async function handleBypassPayment(e: React.FormEvent) {
+    e.preventDefault();
+    setIsBypassing(true);
+    setBypassMessage("");
+
+    try {
+      const response = await fetch("/api/admin/bypass-payment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          photoUuid,
+          adminKey: ADMIN_KEY,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setBypassMessage("✅ Payment bypassed successfully!");
+        // Redirect to order page
+        setTimeout(() => {
+          router.push(`/orders/${photoUuid}?payment_intent=admin-bypass`);
+        }, 1500);
+      } else {
+        const errorData = await response.json();
+        setBypassMessage(`❌ Error: ${errorData.error || "Failed to bypass payment"}`);
+      }
+    } catch (error) {
+      console.error(error);
+      setBypassMessage("❌ Network error occurred");
+    } finally {
+      setIsBypassing(false);
+    }
   }
 
   return (
@@ -69,23 +109,66 @@ export default function AdminPage() {
           </div>
         ) : (
           <div>
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-semibold">Admin Panel</h2>
               <button onClick={logout} className="text-sm text-blue-600">
                 Logout
               </button>
             </div>
-            <div className="mt-4 text-sm text-gray-700">
-              <p>
-                Simple admin panel placeholder. You are logged in as{" "}
-                <strong>{email}</strong>.
-              </p>
-              <p className="mt-3">Available actions (placeholders):</p>
-              <ul className="list-disc pl-5 mt-2 text-sm">
-                <li>View recent orders</li>
-                <li>Manage pricing cards</li>
-                <li>Update official links</li>
-              </ul>
+
+            <div className="space-y-6">
+              <div className="border-b pb-4">
+                <p className="text-sm text-gray-700 mb-2">
+                  Logged in as <strong>{email}</strong>
+                </p>
+              </div>
+
+              {/* Payment Bypass Tool */}
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <h3 className="font-semibold text-gray-900 mb-3">
+                  🔓 Bypass Payment System
+                </h3>
+                <p className="text-xs text-gray-600 mb-4">
+                  Enter a photo UUID to bypass payment and access the photo directly.
+                  This is for testing purposes only.
+                </p>
+                <form onSubmit={handleBypassPayment} className="space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      Photo UUID
+                    </label>
+                    <input
+                      type="text"
+                      value={photoUuid}
+                      onChange={(e) => setPhotoUuid(e.target.value)}
+                      placeholder="e.g., 2506231150DRDGH3MUF"
+                      className="w-full border px-3 py-2 rounded text-sm"
+                      required
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={isBypassing}
+                    className="w-full bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700 disabled:bg-gray-400"
+                  >
+                    {isBypassing ? "Processing..." : "Bypass & View Photo"}
+                  </button>
+                  {bypassMessage && (
+                    <p className="text-sm mt-2">{bypassMessage}</p>
+                  )}
+                </form>
+              </div>
+
+              {/* Other Admin Tools */}
+              <div className="mt-4 text-sm text-gray-700">
+                <p className="font-medium mb-2">Other available actions:</p>
+                <ul className="list-disc pl-5 space-y-1 text-sm text-gray-600">
+                  <li>View recent orders</li>
+                  <li>Manage pricing packages</li>
+                  <li>Update official links</li>
+                  <li>Export customer data</li>
+                </ul>
+              </div>
             </div>
           </div>
         )}

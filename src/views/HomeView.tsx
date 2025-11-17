@@ -153,12 +153,12 @@ function HomeView() {
               </div>
 
               <div className="space-y-3">
-                <a
-                  href="https://www.gov.uk/photos-for-passports"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all group"
-                >
+                              <a
+                href="https://www.gov.uk/apply-renew-passport"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all group"
+              >
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-bold text-green-700 bg-green-100 px-2 py-0.5 rounded">
                       HMPO

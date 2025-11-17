@@ -17,4 +17,9 @@ export interface OrderModel {
   productName?: string;
   specCode: string;
   status: OrderStatus;
+  // Multi-country support
+  secondarySpecCode?: string;
+  secondaryPhotoUrl?: string;
+  // UK Digital Code
+  ukDigitalCode?: string;
 }
