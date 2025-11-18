@@ -22,4 +22,6 @@ export interface OrderModel {
   secondaryPhotoUrl?: string;
   // UK Digital Code
   ukDigitalCode?: string;
+  // Admin processing
+  processedBy?: "customer" | "admin";
 }

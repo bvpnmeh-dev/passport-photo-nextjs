@@ -159,6 +159,7 @@ export default function OrderDetailView() {
                 orderCurrency: "gbp",
                 paymentStatus: "admin-bypass",
                 productName: "Admin Bypass",
+                processedBy: "admin",
               };
               setOrder(order);
               setGetOrderState(() => "success");
@@ -241,7 +242,14 @@ export default function OrderDetailView() {
               </h1>
               <p className="text-gray-600">Order ID: {orderId}</p>
             </div>
-            {order?.status && <OrderStatusTag status={order.status} />}
+            <div className="flex items-center gap-3">
+              {order?.processedBy === "admin" && (
+                <div className="bg-purple-100 border border-purple-300 text-purple-800 px-4 py-2 rounded-lg font-semibold text-sm">
+                  👨‍💼 Admin Processed
+                </div>
+              )}
+              {order?.status && <OrderStatusTag status={order.status} />}
+            </div>
           </div>
         </div>
 
