@@ -196,31 +196,48 @@ export default function AdminPage() {
     setProcessedPhoto(null);
 
     try {
-      // Ensure selectedFile is a File object before compression
-      if (!(selectedFile instanceof File)) {
-        throw new Error("Invalid file type");
+      const compressedFile = await compressImageFile(selectedFile);
+
+      // THIS NEW LOGIC IS THE FIX
+      let finalBase64 = "";
+
+      if (typeof compressedFile === "string") {
+        finalBase64 = compressedFile;
+      } else if (compressedFile instanceof File) {
+        finalBase64 = await fileToBase64(compressedFile);
+      } else {
+        throw new Error("Invalid file type returned after compression.");
       }
 
-      // compressImageFile already returns base64 string
-      const imageDataURL = await compressImageFile(selectedFile);
-
-      // Use orderRepository to create order (same as MakePhotoView)
-      const { orderRepository } = await import("@/data/OrderRepository");
-      const order = await orderRepository.createOrder(
-        selectedSpec.specCode,
-        imageDataURL,
-      );
-
-      setProcessedPhoto({
-        photoUuid: order.orderId,
-        idPhotoUrl: order.croppedNoBgWatermarkImageUrl ?? "",
-        issues: order.issues,
+      const response = await idpSaasService.getIdPhotoNoWatermark({
+        imageBase64: finalBase64,
+        height: selectedSpec.photoHeightPixels,
+        width: selectedSpec.photoWidthPixels,
+        faceHeight: selectedSpec.faceHeightPixels,
+        whiteMarginHeight: selectedSpec.whiteMarginHeightPixels,
+        topPaddingHeightForBg: selectedSpec.topPaddingHeightPixelsForBg,
+        dpiForPrint: selectedSpec.dpi,
+        printablePhotoNumber: 0,
       });
 
-      // Redirect to order page with admin bypass
-      router.push(
-        `/orders/${order.orderId}?payment_intent=admin-bypass&admin=true`,
-      );
+      if (response.data?.status === "success") {
+        const photoUuid = response.data.photoUuid;
+        const idPhotoUrl = response.data.idPhotoUrl;
+        const issues = response.data.issues || [];
+
+        setProcessedPhoto({
+          photoUuid,
+          idPhotoUrl,
+          issues,
+        });
+
+        // Redirect to order page with admin bypass
+        router.push(
+          `/orders/${photoUuid}?payment_intent=admin-bypass&admin=true`,
+        );
+      } else {
+        setUploadError(response.data?.message || "Processing failed");
+      }
     } catch (error: any) {
       console.error("Processing error:", error);
       setUploadError(error.message || "Failed to process photo");
