@@ -198,7 +198,7 @@ export default function AdminPage() {
     try {
       const compressedFile = await compressImageFile(selectedFile);
 
-      // THIS NEW LOGIC IS THE FIX
+      // Handle both string (base64) and File return types from compressImageFile
       let finalBase64 = "";
 
       if (typeof compressedFile === "string") {
