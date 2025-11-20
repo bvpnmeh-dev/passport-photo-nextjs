@@ -152,7 +152,7 @@ function HomeView() {
 
               <button
                 onClick={() => router.push("/make-photo?type=uk")}
-                className="w-full bg-green-600 text-white py-3.5 rounded-lg font-bold hover:bg-green-700 transition-colors mb-2"
+                className="w-full bg-cyan-600 text-white py-3.5 rounded-lg font-bold hover:bg-cyan-700 transition-colors mb-2"
               >
                 Choose UK Digital ID
               </button>
