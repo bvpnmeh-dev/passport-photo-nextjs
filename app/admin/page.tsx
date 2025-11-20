@@ -201,8 +201,11 @@ export default function AdminPage() {
         throw new Error("Invalid file type");
       }
 
+      // Type assertion to ensure TypeScript recognizes File type
+      const fileToCompress: File = selectedFile;
+
       // compressImageFile already returns base64 string
-      const base64 = await compressImageFile(selectedFile);
+      const base64 = await compressImageFile(fileToCompress);
 
       const response = await idpSaasService.getIdPhotoNoWatermark({
         imageBase64: base64,
