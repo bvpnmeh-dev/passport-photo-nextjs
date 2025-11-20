@@ -4,22 +4,10 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { Camera } from "lucide-react";
 import NavItem from "../lib/nav-item";
-import DocumentPhotoModal from "@/components/DocumentPhotoModal";
 
 function HomeView() {
   const router = useRouter();
   const [dvlaOpen, setDvlaOpen] = React.useState(false);
-  const [modalOpen, setModalOpen] = React.useState(false);
-  const [selectedDocument, setSelectedDocument] = React.useState({
-    type: "",
-    icon: "",
-    color: "",
-  });
-
-  const openDocumentModal = (type: string, icon: string, color: string) => {
-    setSelectedDocument({ type, icon, color });
-    setModalOpen(true);
-  };
 
   return (
     <main className="min-h-screen bg-gray-50 text-gray-900">
@@ -75,16 +63,10 @@ function HomeView() {
         <div className="mx-auto max-w-7xl px-6 py-12">
           {/* Trust Metrics Row */}
           <div className="flex justify-center items-center gap-8 mb-6 text-sm">
-            <a
-              href="https://www.google.com/maps/place/Passport+photo/data=!4m7!3m6!1s0x487607794b831f1d:0x99efaf6a695a031f!8m2!3d51.3583655!4d-0.1497255!16s%2Fg%2F11jl0j1rq2!19sChIJHR-DS3kHdkgRHwNaaWqv75k?authuser=0&hl=en&rclk=1"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-              aria-label="View our 4.4 out of 5 star rating from 2,800+ customers on Google Maps"
-            >
+            <div className="flex items-center gap-2">
               <span className="text-yellow-400">★★★★★</span>
               <span>4.4/5 • 2,800+ customers</span>
-            </a>
+            </div>
             <div className="flex items-center gap-2">
               <span className="text-white">✓</span>
               <span>98% approved</span>
@@ -189,7 +171,7 @@ function HomeView() {
                 </a>
 
                 <a
-                  href="https://www.gov.uk/driving-licence-photo-rules"
+                  href="https://www.gov.uk/apply-renew-passport"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all group"
@@ -262,162 +244,6 @@ function HomeView() {
               </p>
             </div>
           </div>
-
-          {/* Quick Document Access Buttons */}
-          <div className="mt-12 max-w-6xl mx-auto" id="services">
-            <h3 className="text-2xl font-bold text-white text-center mb-6">
-              Get Started with Your Document
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-              <button
-                onClick={() =>
-                  openDocumentModal("Passport", "🛂", "bg-blue-600")
-                }
-                className="bg-white hover:bg-blue-50 border-2 border-blue-200 hover:border-blue-400 text-gray-900 px-6 py-4 rounded-xl font-semibold transition-all min-h-[60px] flex items-center justify-between group"
-                aria-label="Get passport photo and digital code"
-              >
-                <div className="flex items-center gap-3">
-                  <span
-                    className="text-2xl bg-blue-100 p-2 rounded-lg group-hover:scale-110 transition-transform"
-                    aria-hidden="true"
-                  >
-                    🛂
-                  </span>
-                  <span className="text-lg">Passport</span>
-                </div>
-                <span
-                  className="text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity"
-                  aria-hidden="true"
-                >
-                  →
-                </span>
-              </button>
-
-              <button
-                onClick={() =>
-                  openDocumentModal("Driving Licence", "🚗", "bg-purple-600")
-                }
-                className="bg-white hover:bg-purple-50 border-2 border-purple-200 hover:border-purple-400 text-gray-900 px-6 py-4 rounded-xl font-semibold transition-all min-h-[60px] flex items-center justify-between group"
-                aria-label="Get driving licence photo and digital code"
-              >
-                <div className="flex items-center gap-3">
-                  <span
-                    className="text-2xl bg-purple-100 p-2 rounded-lg group-hover:scale-110 transition-transform"
-                    aria-hidden="true"
-                  >
-                    🚗
-                  </span>
-                  <span className="text-lg">Driving Licence</span>
-                </div>
-                <span
-                  className="text-purple-600 opacity-0 group-hover:opacity-100 transition-opacity"
-                  aria-hidden="true"
-                >
-                  →
-                </span>
-              </button>
-
-              <button
-                onClick={() =>
-                  openDocumentModal("Oyster Card", "🚇", "bg-red-600")
-                }
-                className="bg-white hover:bg-red-50 border-2 border-red-200 hover:border-red-400 text-gray-900 px-6 py-4 rounded-xl font-semibold transition-all min-h-[60px] flex items-center justify-between group"
-                aria-label="Get Oyster card photo and digital code"
-              >
-                <div className="flex items-center gap-3">
-                  <span
-                    className="text-2xl bg-red-100 p-2 rounded-lg group-hover:scale-110 transition-transform"
-                    aria-hidden="true"
-                  >
-                    🚇
-                  </span>
-                  <span className="text-lg">Oyster Card</span>
-                </div>
-                <span
-                  className="text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
-                  aria-hidden="true"
-                >
-                  →
-                </span>
-              </button>
-
-              <button
-                onClick={() =>
-                  openDocumentModal("Travel Cards", "🎫", "bg-green-600")
-                }
-                className="bg-white hover:bg-green-50 border-2 border-green-200 hover:border-green-400 text-gray-900 px-6 py-4 rounded-xl font-semibold transition-all min-h-[60px] flex items-center justify-between group"
-                aria-label="Get travel card photo and digital code"
-              >
-                <div className="flex items-center gap-3">
-                  <span
-                    className="text-2xl bg-green-100 p-2 rounded-lg group-hover:scale-110 transition-transform"
-                    aria-hidden="true"
-                  >
-                    🎫
-                  </span>
-                  <span className="text-lg">Travel Cards</span>
-                </div>
-                <span
-                  className="text-green-600 opacity-0 group-hover:opacity-100 transition-opacity"
-                  aria-hidden="true"
-                >
-                  →
-                </span>
-              </button>
-
-              <button
-                onClick={() =>
-                  openDocumentModal("Student ID", "🎓", "bg-yellow-600")
-                }
-                className="bg-white hover:bg-yellow-50 border-2 border-yellow-200 hover:border-yellow-400 text-gray-900 px-6 py-4 rounded-xl font-semibold transition-all min-h-[60px] flex items-center justify-between group"
-                aria-label="Get student ID photo and digital code"
-              >
-                <div className="flex items-center gap-3">
-                  <span
-                    className="text-2xl bg-yellow-100 p-2 rounded-lg group-hover:scale-110 transition-transform"
-                    aria-hidden="true"
-                  >
-                    🎓
-                  </span>
-                  <span className="text-lg">Student ID</span>
-                </div>
-                <span
-                  className="text-yellow-600 opacity-0 group-hover:opacity-100 transition-opacity"
-                  aria-hidden="true"
-                >
-                  →
-                </span>
-              </button>
-
-              <button
-                onClick={() =>
-                  openDocumentModal("Rail Cards", "🚄", "bg-indigo-600")
-                }
-                className="bg-white hover:bg-indigo-50 border-2 border-indigo-200 hover:border-indigo-400 text-gray-900 px-6 py-4 rounded-xl font-semibold transition-all min-h-[60px] flex items-center justify-between group"
-                aria-label="Get rail card photo and digital code"
-              >
-                <div className="flex items-center gap-3">
-                  <span
-                    className="text-2xl bg-indigo-100 p-2 rounded-lg group-hover:scale-110 transition-transform"
-                    aria-hidden="true"
-                  >
-                    🚄
-                  </span>
-                  <span className="text-lg">Rail Cards</span>
-                </div>
-                <span
-                  className="text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity"
-                  aria-hidden="true"
-                >
-                  →
-                </span>
-              </button>
-            </div>
-            <p className="text-center text-blue-100 text-sm mt-6">
-              Click any document type to upload a photo and get your digital
-              code instantly
-            </p>
-          </div>
         </div>
       </section>
 
@@ -441,22 +267,26 @@ function HomeView() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {/* Card 1: Single Country */}
-            <div className="border-2 border-gray-300 rounded-2xl bg-white p-8 shadow-sm">
+            {/* Card 1: International (Most Popular) */}
+            <div className="border-2 border-blue-500 rounded-2xl bg-white p-8 shadow-lg relative">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-5 py-1.5 rounded-full text-xs font-bold">
+                Most Popular
+              </div>
+
               <div className="text-4xl font-bold text-gray-900 mb-1">
                 £8.88
                 <span className="text-base font-normal text-gray-600 ml-2">
-                  single country
+                  any country
                 </span>
               </div>
               <h3 className="text-2xl font-bold text-gray-900 mt-3 mb-6">
-                Single Country
+                International
               </h3>
 
               <ul className="space-y-3 mb-8">
                 <li className="flex items-center gap-2">
                   <span className="text-green-600 font-bold text-lg">✓</span>
-                  <span className="text-gray-700">UK or any country</span>
+                  <span className="text-gray-700">200+ countries</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="text-green-600 font-bold text-lg">✓</span>
@@ -469,20 +299,16 @@ function HomeView() {
               </ul>
 
               <button
-                onClick={() => router.push("/make-photo?type=single")}
+                onClick={() => router.push("/make-photo?type=international")}
                 className="w-full bg-blue-600 text-white py-3.5 rounded-lg font-bold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
               >
-                <span className="text-lg">📸</span>
+                <span className="text-lg">🌐</span>
                 Select Country
               </button>
             </div>
 
-            {/* Card 2: Multi-Country (Most Popular) */}
-            <div className="border-2 border-blue-500 rounded-2xl bg-white p-8 shadow-lg relative">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-5 py-1.5 rounded-full text-xs font-bold">
-                Most Popular
-              </div>
-
+            {/* Card 2: Multi-Country */}
+            <div className="border-2 border-blue-500 rounded-2xl bg-white p-8 shadow-sm">
               <div className="text-4xl font-bold text-gray-900 mb-1">
                 £15.20
                 <span className="text-base font-normal text-gray-600 ml-2">
@@ -500,7 +326,7 @@ function HomeView() {
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="text-green-600 font-bold text-lg">✓</span>
-                  <span className="text-gray-700">UK + International</span>
+                  <span className="text-gray-700">HMPO + International</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <span className="text-green-600 font-bold text-lg">✓</span>
@@ -513,7 +339,7 @@ function HomeView() {
                 className="w-full bg-blue-600 text-white py-3.5 rounded-lg font-bold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
               >
                 <span className="text-lg">🌐</span>
-                Choose Multi-Country
+                Choose Multi
               </button>
             </div>
           </div>
@@ -670,16 +496,10 @@ function HomeView() {
             use your personal photos for any purpose beyond creating your
             official document images.
           </p>
-          <a
-            href="https://www.google.com/maps/place/Passport+photo/data=!4m7!3m6!1s0x487607794b831f1d:0x99efaf6a695a031f!8m2!3d51.3583655!4d-0.1497255!16s%2Fg%2F11jl0j1rq2!19sChIJHR-DS3kHdkgRHwNaaWqv75k?authuser=0&hl=en&rclk=1"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 text-yellow-400 hover:opacity-80 transition-opacity"
-            aria-label="Read our 2,800+ customer reviews with 4.4 out of 5 stars on Google Maps"
-          >
+          <div className="flex items-center gap-2 text-yellow-400">
             <span className="text-2xl">★★★★★</span>
             <span className="text-white ml-2">4.4/5 from 2,800+ reviews</span>
-          </a>
+          </div>
         </div>
       </section>
 
@@ -761,15 +581,6 @@ function HomeView() {
           </div>
         </div>
       </footer>
-
-      {/* Document Photo Modal */}
-      <DocumentPhotoModal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        documentType={selectedDocument.type}
-        documentIcon={selectedDocument.icon}
-        documentColor={selectedDocument.color}
-      />
     </main>
   );
 }

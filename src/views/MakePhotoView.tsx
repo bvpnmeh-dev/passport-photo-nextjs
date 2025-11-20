@@ -58,7 +58,10 @@ interface ApiResponse {
 const defaultSpecs: PhotoSpec[] = constants.defaultSpecCodes.map(
   (code) => allPhotoSpecs[code],
 );
-const defaultProductPackage: ProductPackage = constants.productPackages[1];
+// Use Standard package (£8.88) for single country photos
+const defaultProductPackage: ProductPackage =
+  constants.productPackages.find((pkg) => pkg.priceCents === 888) ||
+  constants.productPackages[0];
 
 function MakePhotoView() {
   const searchParams = useSearchParams();

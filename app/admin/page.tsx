@@ -11,10 +11,10 @@ import {
   BarChart3,
   ArrowLeft,
 } from "lucide-react";
-import { allPhotoSpecs, type PhotoSpec } from "../src/models/PhotoSpec";
-import { constants } from "../src/constants";
-import { compressImageFile } from "../src/utils/compressImage";
-import { idpSaasService } from "../src/data/network/IdpSaasService";
+import { allPhotoSpecs, type PhotoSpec } from "@/models/PhotoSpec";
+import { constants } from "@/constants";
+import { compressImageFile } from "@/utils/compressImage";
+import { idpSaasService } from "@/data/network/IdpSaasService";
 
 const CREDENTIALS = [
   { user: "wallington.cameras@yahoo.com", pass: "Admin08" },

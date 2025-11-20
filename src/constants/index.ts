@@ -7,10 +7,12 @@ export const constants = {
   studioName: `${process.env.NEXT_PUBLIC_STUDIO_NAME}`,
   studioDescription: `${process.env.NEXT_PUBLIC_STUDIO_DESCRIPTION}`,
   defaultSpecCodes: [
+    "uk-passport",
     "us-passport",
-    "us-visa",
     "china-passport",
-    "china-visa",
+    "schengen-visa",
+    "canada-passport",
+    "india-passport",
   ] satisfies SpecCode[],
   businessLocations: [
     {
