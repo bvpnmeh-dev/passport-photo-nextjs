@@ -10,6 +10,9 @@
     "lint": "next lint",
     "prepare": "husky",
     "format": "prettier --write .",
+    "test": "jest --watch",
+    "test:ci": "jest --ci",
+    "test:coverage": "jest --coverage",
     "test:inband": "jest --runInBand --config ./src/__tests__/jest-inband.json"
   },
   "dependencies": {
@@ -29,6 +32,8 @@
     "@next/eslint-plugin-next": "^15.3.4",
     "@tailwindcss/postcss": "^4",
     "@tailwindcss/vite": "^4.1.10",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@types/jest": "^30.0.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

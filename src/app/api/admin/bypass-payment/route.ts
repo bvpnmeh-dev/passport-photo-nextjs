@@ -34,19 +34,23 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         onSuccess: (data) => ({
           status: 200,
           body: {
-            photoUuid: data.photoUuid,
-            specCode: data.specCode,
-            idPhotoTempResultPhotoUrl: data.idPhotoUrl,
+            photoUuid: data.photoUuid || photoUuid,
+            specCode: data.specCode || "uk-passport",
+            idPhotoTempResultPhotoUrl:
+              data.idPhotoUrl || data.idPhotoTempResultPhotoUrl,
+            idPhotoUrl: data.idPhotoUrl,
             idPhotoOriginalBgPhotoUrl: data.idPhotoOriginalBgUrl,
             amountInCents: 0,
             currency: "gbp",
             paymentStatus: "admin-bypass",
+            processedBy: "admin",
           },
         }),
         onError: ({ status, responseText }) => ({
-          status: 400,
+          status: status,
           body: {
-            error: `Bad request: ${responseText}`,
+            error: `Backend error: ${responseText}`,
+            photoUuid: photoUuid,
           },
         }),
       },
@@ -54,7 +58,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   } catch (error) {
     console.error("Error in admin bypass:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      {
+        error: "Internal server error",
+        details: error instanceof Error ? error.message : "Unknown error",
+        photoUuid: photoUuid,
+      },
       { status: 500 },
     );
   }

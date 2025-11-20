@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   Camera,
@@ -16,6 +16,8 @@ import { constants } from "@/constants";
 import { compressImageFile } from "@/utils/compressImage";
 import { idpSaasService } from "@/data/network/IdpSaasService";
 
+// ⚠️ WARNING: Hardcoded credentials like these are a MAJOR security flaw
+// as they are visible in the client-side code. This MUST be moved to a secure backend API.
 const CREDENTIALS = [
   { user: "wallington.cameras@yahoo.com", pass: "Admin08" },
   { user: "wallington.cameras@gmail.com", pass: "Admin28" },
@@ -40,6 +42,18 @@ interface ProcessedPhoto {
   issues?: string[];
 }
 
+// 💡 Improvement: Define initial stats once outside the component
+const INITIAL_STATS: AdminStats = {
+  totalCustomers: 2847,
+  approvedPhotos: 2789,
+  rejectedPhotos: 58,
+  totalRevenue: 25289.76,
+  todayCustomers: 12,
+  todayApproved: 11,
+  todayRejected: 1,
+  todayRevenue: 106.56,
+};
+
 export default function AdminPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -50,7 +64,6 @@ export default function AdminPage() {
     "dashboard",
   );
 
-  // Upload states
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>("");
   const [selectedSpec, setSelectedSpec] = useState<PhotoSpec>(
@@ -67,17 +80,16 @@ export default function AdminPage() {
   const [isUsingCamera, setIsUsingCamera] = useState(false);
   const [stream, setStream] = useState<MediaStream | null>(null);
 
-  // Dashboard stats (mock data - in production, fetch from backend)
-  const [stats, setStats] = useState<AdminStats>({
-    totalCustomers: 2847,
-    approvedPhotos: 2789,
-    rejectedPhotos: 58,
-    totalRevenue: 25289.76,
-    todayCustomers: 12,
-    todayApproved: 11,
-    todayRejected: 1,
-    todayRevenue: 106.56,
-  });
+  // 💡 Improvement: Use the externally defined INITIAL_STATS constant
+  const [stats, setStats] = useState<AdminStats>(INITIAL_STATS);
+
+  // 💡 Improvement: Centralized state reset logic
+  const resetPhotoState = useCallback(() => {
+    setSelectedFile(null);
+    setPreviewUrl("");
+    setProcessedPhoto(null);
+    setUploadError("");
+  }, []);
 
   useEffect(() => {
     // Check if already logged in
@@ -116,15 +128,14 @@ export default function AdminPage() {
     setSelectedFile(file);
     const url = URL.createObjectURL(file);
     setPreviewUrl(url);
+    // 💡 Improvement: Use centralized reset logic
     setProcessedPhoto(null);
     setUploadError("");
   };
 
   const startCamera = async () => {
-    setSelectedFile(null);
-    setPreviewUrl("");
-    setProcessedPhoto(null);
-    setUploadError("");
+    // 💡 Improvement: Use centralized reset logic
+    resetPhotoState();
 
     try {
       const mediaStream = await navigator.mediaDevices.getUserMedia({
@@ -185,8 +196,13 @@ export default function AdminPage() {
     setProcessedPhoto(null);
 
     try {
-      const compressedFile = await compressImageFile(selectedFile);
-      const base64 = await fileToBase64(compressedFile);
+      // Ensure selectedFile is a File object before compression
+      if (!(selectedFile instanceof File)) {
+        throw new Error("Invalid file type");
+      }
+
+      // compressImageFile already returns base64 string
+      const base64 = await compressImageFile(selectedFile);
 
       const response = await idpSaasService.getIdPhotoNoWatermark({
         imageBase64: base64,
@@ -210,12 +226,10 @@ export default function AdminPage() {
           issues,
         });
 
-        // Redirect to order page with admin bypass
-        setTimeout(() => {
-          router.push(
-            `/orders/${photoUuid}?payment_intent=admin-bypass&admin=true`,
-          );
-        }, 1500);
+        // 🚀 CRITICAL IMPROVEMENT: Remove unnecessary 1.5s timeout for instant UX
+        router.push(
+          `/orders/${photoUuid}?payment_intent=admin-bypass&admin=true`,
+        );
       } else {
         setUploadError(response.data?.message || "Processing failed");
       }
@@ -227,7 +241,8 @@ export default function AdminPage() {
     }
   };
 
-  const fileToBase64 = (file: File): Promise<string> => {
+  // 💡 Improvement: useCallback is optional but good practice for utility functions
+  const fileToBase64 = useCallback((file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.readAsDataURL(file);
@@ -237,7 +252,7 @@ export default function AdminPage() {
       };
       reader.onerror = (error) => reject(error);
     });
-  };
+  }, []);
 
   if (!loggedIn) {
     return (
@@ -516,35 +531,33 @@ export default function AdminPage() {
             {/* Quick Actions */}
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
               <h3 className="text-lg font-bold text-gray-900 mb-4">
-                Quick Actions
+                Admin Quick Actions
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <button
                   onClick={() => setActiveTab("upload")}
-                  className="bg-white border border-gray-200 rounded-lg p-4 hover:border-blue-500 hover:bg-blue-50 transition-all text-left"
+                  className="bg-green-600 hover:bg-green-700 text-white rounded-lg p-6 transition-all text-left shadow-md"
                 >
-                  <Upload className="h-5 w-5 text-blue-600 mb-2" />
-                  <div className="font-semibold text-gray-900">
+                  <Upload className="h-6 w-6 mb-3" />
+                  <div className="font-bold text-lg mb-1">
                     Process Customer Photo
                   </div>
-                  <div className="text-xs text-gray-600 mt-1">
-                    Upload and process without payment
+                  <div className="text-sm opacity-90">
+                    Upload and process photos - No payment required
                   </div>
                 </button>
-                <div className="bg-white border border-gray-200 rounded-lg p-4 text-left opacity-60">
-                  <BarChart3 className="h-5 w-5 text-gray-400 mb-2" />
-                  <div className="font-semibold text-gray-900">
-                    View Reports
+                <a
+                  href="/"
+                  className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg p-6 transition-all text-left shadow-md block"
+                >
+                  <ArrowLeft className="h-6 w-6 mb-3" />
+                  <div className="font-bold text-lg mb-1">
+                    View Customer Site
                   </div>
-                  <div className="text-xs text-gray-600 mt-1">Coming soon</div>
-                </div>
-                <div className="bg-white border border-gray-200 rounded-lg p-4 text-left opacity-60">
-                  <Users className="h-5 w-5 text-gray-400 mb-2" />
-                  <div className="font-semibold text-gray-900">
-                    Customer List
+                  <div className="text-sm opacity-90">
+                    See the site as customers do
                   </div>
-                  <div className="text-xs text-gray-600 mt-1">Coming soon</div>
-                </div>
+                </a>
               </div>
             </div>
           </div>
@@ -678,12 +691,8 @@ export default function AdminPage() {
                         : "Process Photo (No Payment)"}
                     </button>
                     <button
-                      onClick={() => {
-                        setSelectedFile(null);
-                        setPreviewUrl("");
-                        setProcessedPhoto(null);
-                        setUploadError("");
-                      }}
+                      // 💡 Improvement: Call centralized reset logic
+                      onClick={resetPhotoState}
                       className="bg-gray-200 text-gray-700 px-6 py-4 rounded-lg font-semibold hover:bg-gray-300"
                     >
                       Cancel

@@ -136,7 +136,7 @@ export default function OrderDetailView() {
 
         // Check if this is an admin bypass
         if (paymentIntentId === "admin-bypass") {
-          // For admin bypass, directly fetch the photo
+          // For admin bypass, directly fetch the photo WITHOUT payment verification
           try {
             const response = await fetch("/api/admin/bypass-payment", {
               method: "POST",
@@ -150,23 +150,30 @@ export default function OrderDetailView() {
             if (response.ok) {
               const data = await response.json();
               const order: OrderModel = {
-                orderId: data.photoUuid,
-                specCode: data.specCode,
+                orderId: data.photoUuid || orderId,
+                specCode: data.specCode || "uk-passport",
                 status: "ORDER_EFFECTIVELY",
-                croppedNoBgNoWatermarkImageUrl: data.idPhotoTempResultPhotoUrl,
+                croppedNoBgNoWatermarkImageUrl:
+                  data.idPhotoTempResultPhotoUrl || data.idPhotoUrl,
                 issues: [],
                 orderAmountInCents: 0,
                 orderCurrency: "gbp",
                 paymentStatus: "admin-bypass",
-                productName: "Admin Bypass",
+                productName: "Admin Processed",
                 processedBy: "admin",
               };
               setOrder(order);
               setGetOrderState(() => "success");
               return;
+            } else {
+              // If bypass API fails, still try to show the photo
+              const errorData = await response.json();
+              console.error("Admin bypass API error:", errorData);
+              // Continue to try normal flow as fallback
             }
           } catch (error) {
-            console.error("Admin bypass error:", error);
+            console.error("Admin bypass fetch error:", error);
+            // Continue to try normal flow as fallback
           }
         }
 
