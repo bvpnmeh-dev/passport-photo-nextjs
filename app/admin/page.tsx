@@ -201,41 +201,26 @@ export default function AdminPage() {
         throw new Error("Invalid file type");
       }
 
-      // Type assertion to ensure TypeScript recognizes File type
-      const fileToCompress: File = selectedFile;
-
       // compressImageFile already returns base64 string
-      const base64 = await compressImageFile(fileToCompress);
+      const imageDataURL = await compressImageFile(selectedFile);
 
-      const response = await idpSaasService.getIdPhotoNoWatermark({
-        imageBase64: base64,
-        height: selectedSpec.photoHeightPixels,
-        width: selectedSpec.photoWidthPixels,
-        faceHeight: selectedSpec.faceHeightPixels,
-        whiteMarginHeight: selectedSpec.whiteMarginHeightPixels,
-        topPaddingHeightForBg: selectedSpec.topPaddingHeightPixelsForBg,
-        dpiForPrint: selectedSpec.dpi,
-        printablePhotoNumber: 0,
+      // Use orderRepository to create order (same as MakePhotoView)
+      const { orderRepository } = await import("@/data/OrderRepository");
+      const order = await orderRepository.createOrder(
+        selectedSpec.specCode,
+        imageDataURL,
+      );
+
+      setProcessedPhoto({
+        photoUuid: order.orderId,
+        idPhotoUrl: order.croppedNoBgWatermarkImageUrl ?? "",
+        issues: order.issues,
       });
 
-      if (response.data?.status === "success") {
-        const photoUuid = response.data.photoUuid;
-        const idPhotoUrl = response.data.idPhotoUrl;
-        const issues = response.data.issues || [];
-
-        setProcessedPhoto({
-          photoUuid,
-          idPhotoUrl,
-          issues,
-        });
-
-        // 🚀 CRITICAL IMPROVEMENT: Remove unnecessary 1.5s timeout for instant UX
-        router.push(
-          `/orders/${photoUuid}?payment_intent=admin-bypass&admin=true`,
-        );
-      } else {
-        setUploadError(response.data?.message || "Processing failed");
-      }
+      // Redirect to order page with admin bypass
+      router.push(
+        `/orders/${order.orderId}?payment_intent=admin-bypass&admin=true`,
+      );
     } catch (error: any) {
       console.error("Processing error:", error);
       setUploadError(error.message || "Failed to process photo");
