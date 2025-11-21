@@ -24,54 +24,26 @@ export const constants = {
   ] satisfies BusinessLocation[],
   productPackages: [
     {
-      id: "basic",
-      name: `${process.env.NEXT_PUBLIC_BASIC_PKG_NAME}`,
-      priceCents: Number(`${process.env.NEXT_PUBLIC_BASIC_PKG_PRICE_IN_CENT}`),
-      currency: `${process.env.NEXT_PUBLIC_BASIC_PKG_CURRENCY}`,
-      description: `${process.env.NEXT_PUBLIC_BASIC_PKG_DESCRIPTION}`
-        .split("\n")
-        .filter((it) => !!it),
-      printedPhotoNumber: Number(
-        `${process.env.NEXT_PUBLIC_BASIC_PKG_PRINTED_PHOTO_NUMBER}`,
-      ),
-      isPopular: process.env.NEXT_PUBLIC_BASIC_PKG_IS_POPULAR === "true",
-      isPickUp: process.env.NEXT_PUBLIC_BASIC_PKG_IS_PICKUP === "true",
-    },
-    {
       id: "standard",
-      name: `${process.env.NEXT_PUBLIC_STANDARD_PKG_NAME}`,
-      priceCents: Number(
-        `${process.env.NEXT_PUBLIC_STANDARD_PKG_PRICE_IN_CENT}`,
-      ),
-      currency: `${process.env.NEXT_PUBLIC_STANDARD_PKG_CURRENCY}`,
-      description: `${process.env.NEXT_PUBLIC_STANDARD_PKG_DESCRIPTION}`
-        .split("\n")
-        .filter((it) => !!it),
-      printedPhotoNumber: Number(
-        `${process.env.NEXT_PUBLIC_STANDARD_PKG_PRINTED_PHOTO_NUMBER}`,
-      ),
-      isPopular: process.env.NEXT_PUBLIC_STANDARD_PKG_IS_POPULAR === "true",
-      isPickUp: process.env.NEXT_PUBLIC_STANDARD_PKG_IS_PICKUP === "true",
+      name: "Standard",
+      priceCents: 888,
+      currency: "gbp",
+      description: ["Single country photo"],
+      printedPhotoNumber: 2,
+      isPopular: false,
+      isPickUp: false,
     },
     {
       id: "premium",
-      name: `${process.env.NEXT_PUBLIC_PREMIUM_PKG_NAME}`,
-      priceCents: Number(
-        `${process.env.NEXT_PUBLIC_PREMIUM_PKG_PRICE_IN_CENT}`,
-      ),
-      currency: `${process.env.NEXT_PUBLIC_PREMIUM_PKG_CURRENCY}`,
-      description: `${process.env.NEXT_PUBLIC_PREMIUM_PKG_DESCRIPTION}`
-        .split("\n")
-        .filter((it) => !!it),
-      printedPhotoNumber: Number(
-        `${process.env.NEXT_PUBLIC_PREMIUM_PKG_PRINTED_PHOTO_NUMBER}`,
-      ),
-      isPopular: process.env.NEXT_PUBLIC_PREMIUM_PKG_IS_POPULAR === "true",
-      isPickUp: process.env.NEXT_PUBLIC_PREMIUM_PKG_IS_PICKUP === "true",
+      name: "Premium",
+      priceCents: 1520,
+      currency: "gbp",
+      description: ["Multi-country support"],
+      printedPhotoNumber: 2,
+      isPopular: true,
+      isPickUp: false,
     },
-  ]
-    .filter((pkg) => pkg.name && pkg.name !== "undefined")
-    .filter((pkg) => pkg.priceCents > 0) satisfies ProductPackage[],
+  ] satisfies ProductPackage[],
   perAdditionalPhotoPriceInCent: Number(
     `${process.env.NEXT_PUBLIC_PER_ADDITIONAL_PHOTO_PRICE_IN_CENT}`,
   ),
