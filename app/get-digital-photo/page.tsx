@@ -94,8 +94,8 @@ export default function Page() {
             <div className="absolute -top-3 right-3 bg-yellow-300 px-3 py-1 text-xs font-semibold rounded">
               Most Popular
             </div>
-            <div className="text-sm text-gray-500">£8.88 any country</div>
-            <h3 className="text-xl font-bold mt-2">International</h3>
+            <div className="text-sm text-gray-500">£8.88 single country</div>
+            <h3 className="text-xl font-bold mt-2">Single Country</h3>
             <ul className="mt-4 space-y-1 text-sm">
               <li>200+ countries</li>
               <li>Government compliant</li>
