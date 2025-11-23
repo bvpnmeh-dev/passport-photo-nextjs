@@ -11,12 +11,14 @@ function getIdphotoApiEndpoint(): string {
 }
 
 const IDPHOTO_API_ENDPOINT = getIdphotoApiEndpoint();
-console.log(`Current idphoto api endpoint: ${IDPHOTO_API_ENDPOINT}`);
+if (process.env.NODE_ENV === "development") {
+  console.log(`Current idphoto api endpoint: ${IDPHOTO_API_ENDPOINT}`);
+}
 
 export const forwardRequest = async (
   method: string,
   path: string,
-  body?: any,
+  body?: unknown,
 ) => {
   const url = `${IDPHOTO_API_ENDPOINT}${path}`;
   const options: RequestInit = {
@@ -40,12 +42,15 @@ export const forwardRequest = async (
 
 type ErrorHandler = (params: { status: number; responseText: string }) => {
   status?: number;
-  body: any;
+  body: Record<string, unknown>;
 };
 
-type SuccessHandler<T> = (data: T) => { status?: number; body: any };
+type SuccessHandler<T> = (data: T) => {
+  status?: number;
+  body: Record<string, unknown>;
+};
 
-export async function handleForwardRequest<T = any>(
+export async function handleForwardRequest<T = Record<string, unknown>>(
   requestPromise: Promise<Response>,
   options?: {
     onError?: ErrorHandler;

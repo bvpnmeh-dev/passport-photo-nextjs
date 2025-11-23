@@ -5,9 +5,25 @@ import { useRouter } from "next/navigation";
 import { Camera } from "lucide-react";
 import NavItem from "../lib/nav-item";
 import DocumentPhotoModal from "@/components/DocumentPhotoModal";
+import { constants } from "../constants";
+import { formatPrice } from "../utils/formatPrice";
 
 function HomeView() {
   const router = useRouter();
+
+  const standardPackage = constants.productPackages.find(
+    (pkg) => pkg.id === "standard",
+  );
+  const premiumPackage = constants.productPackages.find(
+    (pkg) => pkg.id === "premium",
+  );
+
+  const standardPrice = standardPackage
+    ? formatPrice(standardPackage.priceCents, standardPackage.currency)
+    : formatPrice(888, "gbp");
+  const premiumPrice = premiumPackage
+    ? formatPrice(premiumPackage.priceCents, premiumPackage.currency)
+    : formatPrice(1520, "gbp");
   const [dvlaOpen, setDvlaOpen] = React.useState(false);
   const [modalOpen, setModalOpen] = React.useState(false);
   const [selectedDocument, setSelectedDocument] = React.useState({
@@ -122,7 +138,7 @@ function HomeView() {
             {/* UK Digital ID Card */}
             <div className="bg-white rounded-2xl p-8 text-gray-900">
               <div className="text-4xl font-bold mb-1">
-                £8.88
+                {standardPrice}
                 <span className="text-base font-normal text-gray-600 ml-2">
                   all UK docs
                 </span>
@@ -134,25 +150,65 @@ function HomeView() {
               <ul className="space-y-2.5 mb-6">
                 <li className="flex items-center gap-2 text-sm">
                   <span className="text-green-600 font-bold text-base">✓</span>
-                  <span>Passport • Driving Licence</span>
-                </li>
-                <li className="flex items-center gap-2 text-sm">
-                  <span className="text-green-600 font-bold text-base">✓</span>
-                  <span>Oyster Card • Travel Cards</span>
-                </li>
-                <li className="flex items-center gap-2 text-sm">
-                  <span className="text-green-600 font-bold text-base">✓</span>
-                  <span>Blue Badge • Student ID</span>
-                </li>
-                <li className="flex items-center gap-2 text-sm">
-                  <span className="text-green-600 font-bold text-base">✓</span>
                   <span>HMPO/DVLA compliant</span>
+                </li>
+                <li className="flex items-center gap-2 text-sm">
+                  <span className="text-green-600 font-bold text-base">✓</span>
+                  <span>All UK documents covered</span>
+                </li>
+                <li className="flex items-center gap-2 text-sm">
+                  <span className="text-green-600 font-bold text-base">✓</span>
+                  <span>Digital delivery instantly</span>
                 </li>
               </ul>
 
+              {/* Cyan Document Type Buttons */}
+              <div className="space-y-2 mb-6">
+                <button
+                  onClick={() =>
+                    router.push("/make-photo?specCode=uk-passport")
+                  }
+                  className="w-full text-center py-3 text-sm font-semibold rounded-lg transition-all duration-200
+                             bg-cyan-500 hover:bg-cyan-600 text-white shadow-md hover:shadow-lg
+                             focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-opacity-50"
+                >
+                  Passport Photos
+                </button>
+                <button
+                  onClick={() =>
+                    router.push("/make-photo?specCode=uk-passport")
+                  }
+                  className="w-full text-center py-3 text-sm font-semibold rounded-lg transition-all duration-200
+                             bg-cyan-500 hover:bg-cyan-600 text-white shadow-md hover:shadow-lg
+                             focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-opacity-50"
+                >
+                  Driving Licence Photos
+                </button>
+                <button
+                  onClick={() =>
+                    router.push("/make-photo?specCode=uk-passport")
+                  }
+                  className="w-full text-center py-3 text-sm font-semibold rounded-lg transition-all duration-200
+                             bg-cyan-500 hover:bg-cyan-600 text-white shadow-md hover:shadow-lg
+                             focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-opacity-50"
+                >
+                  Oyster Card / Travel Photos
+                </button>
+                <button
+                  onClick={() =>
+                    router.push("/make-photo?specCode=uk-passport")
+                  }
+                  className="w-full text-center py-3 text-sm font-semibold rounded-lg transition-all duration-200
+                             bg-cyan-500 hover:bg-cyan-600 text-white shadow-md hover:shadow-lg
+                             focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-opacity-50"
+                >
+                  Blue Badge / Student ID Photos
+                </button>
+              </div>
+
               <button
                 onClick={() => router.push("/make-photo?type=uk")}
-                className="w-full bg-cyan-600 text-white py-3.5 rounded-lg font-bold hover:bg-cyan-700 transition-colors mb-2"
+                className="w-full bg-green-600 text-white py-3.5 rounded-lg font-bold hover:bg-green-700 transition-colors mb-2"
               >
                 Choose UK Digital ID
               </button>
@@ -222,22 +278,27 @@ function HomeView() {
                   </span>
                 </a>
 
-                <a
-                  href="https://www.dfa.ie/passports/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all group"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-orange-700 bg-orange-100 px-2 py-0.5 rounded">
-                      IRE
+                {/* Irish Passport - Hidden for public, available for admin review */}
+                {process.env.NEXT_PUBLIC_SHOW_IRISH_PASSPORT === "true" && (
+                  <a
+                    href="https://www.dfa.ie/passports/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all group"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-orange-700 bg-orange-100 px-2 py-0.5 rounded">
+                        IRE
+                      </span>
+                      <span className="text-sm font-medium">
+                        Irish Passport
+                      </span>
+                    </div>
+                    <span className="text-gray-400 group-hover:text-blue-600">
+                      →
                     </span>
-                    <span className="text-sm font-medium">Irish Passport</span>
-                  </div>
-                  <span className="text-gray-400 group-hover:text-blue-600">
-                    →
-                  </span>
-                </a>
+                  </a>
+                )}
 
                 <a
                   href="https://www.gov.uk/government/organisations/hm-passport-office"
@@ -444,7 +505,7 @@ function HomeView() {
             {/* Card 1: Single Country */}
             <div className="border-2 border-gray-300 rounded-2xl bg-white p-8 shadow-sm">
               <div className="text-4xl font-bold text-gray-900 mb-1">
-                £8.88
+                {standardPrice}
                 <span className="text-base font-normal text-gray-600 ml-2">
                   single country
                 </span>
@@ -484,7 +545,7 @@ function HomeView() {
               </div>
 
               <div className="text-4xl font-bold text-gray-900 mb-1">
-                £15.20
+                {premiumPrice}
                 <span className="text-base font-normal text-gray-600 ml-2">
                   2 countries
                 </span>

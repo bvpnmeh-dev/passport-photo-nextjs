@@ -6,8 +6,45 @@ type RequestBody = {
   adminKey: string;
 };
 
-// Simple admin key check (in production, use secure auth)
-const ADMIN_KEYS = ["wallington-admin-2024", "dev-bypass-key"];
+// Admin authentication from environment variables
+const ADMIN_KEYS = (process.env.ADMIN_ACCESS_KEYS || "")
+  .split(",")
+  .map((key) => key.trim())
+  .filter(Boolean);
+
+if (ADMIN_KEYS.length === 0) {
+  console.warn(
+    "WARNING: ADMIN_ACCESS_KEYS not configured. Admin bypass disabled.",
+  );
+}
+
+// Rate limiting configuration
+const RATE_LIMIT_MAX = Number(process.env.ADMIN_RATE_LIMIT_MAX_REQUESTS) || 10;
+const RATE_LIMIT_WINDOW =
+  Number(process.env.ADMIN_RATE_LIMIT_WINDOW_MS) || 60000;
+
+// Simple in-memory rate limiter (for production, use Redis or similar)
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+
+function checkRateLimit(identifier: string): boolean {
+  const now = Date.now();
+  const record = rateLimitMap.get(identifier);
+
+  if (!record || now > record.resetTime) {
+    rateLimitMap.set(identifier, {
+      count: 1,
+      resetTime: now + RATE_LIMIT_WINDOW,
+    });
+    return true;
+  }
+
+  if (record.count >= RATE_LIMIT_MAX) {
+    return false;
+  }
+
+  record.count++;
+  return true;
+}
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const { photoUuid, adminKey }: RequestBody = await req.json();
@@ -22,6 +59,20 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   // Verify admin key
   if (!ADMIN_KEYS.includes(adminKey)) {
     return NextResponse.json({ error: "Invalid admin key" }, { status: 403 });
+  }
+
+  // Rate limiting check
+  const clientIp = req.headers.get("x-forwarded-for") || req.ip || "unknown";
+  const rateLimitKey = `admin-bypass:${clientIp}:${adminKey}`;
+
+  if (!checkRateLimit(rateLimitKey)) {
+    return NextResponse.json(
+      {
+        error: "Rate limit exceeded",
+        message: `Maximum ${RATE_LIMIT_MAX} requests per ${RATE_LIMIT_WINDOW / 1000} seconds`,
+      },
+      { status: 429 },
+    );
   }
 
   try {

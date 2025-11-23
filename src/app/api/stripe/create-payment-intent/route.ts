@@ -13,6 +13,14 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
 
+  // Validate amount is positive
+  if (amountInCent <= 0 || !Number.isInteger(amountInCent)) {
+    return NextResponse.json(
+      { error: "Invalid amount: must be a positive integer" },
+      { status: 400 },
+    );
+  }
+
   try {
     const paymentIntent = await stripe.paymentIntents.create({
       amount: amountInCent,
@@ -28,6 +36,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       { status: 200 },
     );
   } catch (error) {
+    console.error(
+      "Error creating payment intent:",
+      error instanceof Error ? error.message : String(error),
+    );
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

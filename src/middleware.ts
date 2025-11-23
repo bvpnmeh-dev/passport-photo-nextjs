@@ -27,6 +27,36 @@ export function middleware(request: NextRequest) {
     response.headers.set(key, value);
   });
 
+  // Add security headers
+  response.headers.set("X-Frame-Options", "DENY");
+  response.headers.set("X-Content-Type-Options", "nosniff");
+  response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  response.headers.set(
+    "Permissions-Policy",
+    "camera=(self), geolocation=(), microphone=()",
+  );
+
+  // Only add CSP in production to avoid breaking development
+  if (process.env.NODE_ENV === "production") {
+    const cspHeader = `
+      default-src 'self';
+      script-src 'self' 'unsafe-eval' 'unsafe-inline' https://js.stripe.com;
+      style-src 'self' 'unsafe-inline';
+      img-src 'self' data: https: blob:;
+      font-src 'self' data:;
+      connect-src 'self' https://api.stripe.com https://api.idphoto.com https://api-us.idphotoapp.com;
+      frame-src https://js.stripe.com https://hooks.stripe.com;
+      object-src 'none';
+      base-uri 'self';
+      form-action 'self';
+      frame-ancestors 'none';
+    `
+      .replace(/\s{2,}/g, " ")
+      .trim();
+
+    response.headers.set("Content-Security-Policy", cspHeader);
+  }
+
   return response;
 }
 

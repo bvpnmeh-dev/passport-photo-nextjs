@@ -11,9 +11,6 @@ const stripe = getStripeInstance();
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const { photoUuid, paymentIntentId }: RequestBody = await req.json();
-  console.log(
-    `Current photoUuid: ${photoUuid}, paymentIntentId: ${paymentIntentId}`,
-  );
 
   if (!photoUuid || !paymentIntentId) {
     return NextResponse.json(
@@ -49,9 +46,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       );
     }
   } catch (error) {
-    console.error("Error verifying payment and getting photo:", error);
+    console.error(
+      "Error verifying payment:",
+      error instanceof Error ? error.message : String(error),
+    );
     return NextResponse.json(
-      { error: "Invalid payment intent ID" },
+      { error: "Invalid payment intent ID or payment verification failed" },
       { status: 400 },
     );
   }
@@ -100,9 +100,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       },
     );
   } catch (error) {
-    console.error("Error verifying payment and getting photo:", error);
+    console.error(
+      "Error getting photo without watermark:",
+      error instanceof Error ? error.message : String(error),
+    );
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Failed to retrieve photo" },
       { status: 500 },
     );
   }

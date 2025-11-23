@@ -1,7 +1,23 @@
 "use client";
 import React from "react";
+import { constants } from "@/constants";
+import { formatPrice } from "@/utils/formatPrice";
 
 export default function Page() {
+  const standardPackage = constants.productPackages.find(
+    (pkg) => pkg.id === "standard",
+  );
+  const premiumPackage = constants.productPackages.find(
+    (pkg) => pkg.id === "premium",
+  );
+
+  const standardPrice = standardPackage
+    ? formatPrice(standardPackage.priceCents, standardPackage.currency)
+    : "£8.88";
+  const premiumPrice = premiumPackage
+    ? formatPrice(premiumPackage.priceCents, premiumPackage.currency)
+    : "£15.20";
+
   return (
     <main className="min-h-screen bg-gray-50 text-gray-900">
       {/* Section 1: Navigation Header */}
@@ -68,7 +84,9 @@ export default function Page() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Card 1 */}
           <div className="border rounded-lg bg-white p-6">
-            <div className="text-sm text-gray-500">£8.88 all UK docs</div>
+            <div className="text-sm text-gray-500">
+              {standardPrice} all UK docs
+            </div>
             <h3 className="text-xl font-bold mt-2">UK Digital ID Code</h3>
             <p className="text-sm text-gray-600 mt-2">
               Complete digital solution for all UK documents
@@ -94,7 +112,9 @@ export default function Page() {
             <div className="absolute -top-3 right-3 bg-yellow-300 px-3 py-1 text-xs font-semibold rounded">
               Most Popular
             </div>
-            <div className="text-sm text-gray-500">£8.88 single country</div>
+            <div className="text-sm text-gray-500">
+              {standardPrice} single country
+            </div>
             <h3 className="text-xl font-bold mt-2">Single Country</h3>
             <ul className="mt-4 space-y-1 text-sm">
               <li>200+ countries</li>
@@ -110,7 +130,9 @@ export default function Page() {
 
           {/* Card 3 */}
           <div className="border rounded-lg bg-white p-6">
-            <div className="text-sm text-gray-500">£15.20 2 countries</div>
+            <div className="text-sm text-gray-500">
+              {premiumPrice} 2 countries
+            </div>
             <h3 className="text-xl font-bold mt-2">Multi-Country</h3>
             <ul className="mt-4 space-y-1 text-sm">
               <li>2 different countries</li>

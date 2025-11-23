@@ -46,6 +46,7 @@ import type { OrderModel } from "../models/OrderModel";
 import NavItem from "../lib/nav-item";
 import { computeTotalAndPhotoNumber } from "@/utils/computeTotalAndPhotoNumber";
 import ProductPackageCell from "@/components/ProductPackageCell";
+import MultiCountryUpsellButton from "@/components/MultiCountryUpsellButton";
 import goodSampleImage from "@/assets/good3.png";
 
 interface ApiResponse {
@@ -59,17 +60,10 @@ const defaultSpecs: PhotoSpec[] = constants.defaultSpecCodes.map(
   (code) => allPhotoSpecs[code],
 );
 
-// HARDCODED £8.88 package to avoid environment variable issues
-const defaultProductPackage: ProductPackage = {
-  id: "standard",
-  name: "Standard",
-  priceCents: 888,
-  currency: "gbp",
-  description: ["Single country photo"],
-  printedPhotoNumber: 2,
-  isPopular: false,
-  isPickUp: false,
-};
+// Default package from constants (uses env variables with fallbacks)
+const defaultProductPackage: ProductPackage =
+  constants.productPackages.find((pkg) => pkg.id === "standard") ||
+  constants.productPackages[0];
 
 function MakePhotoView() {
   const searchParams = useSearchParams();
@@ -102,6 +96,9 @@ function MakePhotoView() {
   const [paymentMessage, setPaymentMessage] = useState("");
   const [additionalPrintedPhotoNumber, setAdditionalPrintedPhotoNumber] =
     useState(0);
+  const [hasMultiCountryUpsell, setHasMultiCountryUpsell] = useState(false);
+  const [isSpecPreselected, setIsSpecPreselected] = useState(false);
+  const [requestHumanReview, setRequestHumanReview] = useState(false);
 
   const formattedPrice = formatPrice(
     selectedPackage.priceCents,
@@ -316,12 +313,10 @@ function MakePhotoView() {
     orderId: string | undefined = currentOrder?.orderId,
   ) => {
     if (!orderId) {
-      console.log("orderId is empty, return");
       return;
     }
 
     if (!stripe.current) {
-      console.log("stripe instance is empty, return");
       return;
     }
 
@@ -351,13 +346,29 @@ function MakePhotoView() {
 
   const handleAdditionalPhotoNumberUpdate = async (newVal: number) => {
     if (newVal === additionalPrintedPhotoNumber) {
-      console.log("printedPhotoNumber not changed, return");
       return;
     }
 
     setAdditionalPrintedPhotoNumber(newVal);
 
     await updateStripeForm(selectedPackage, newVal);
+  };
+
+  const handleMultiCountryUpgrade = async () => {
+    if (hasMultiCountryUpsell) {
+      return; // Already upgraded
+    }
+
+    // Find premium package
+    const premiumPackage = constants.productPackages.find(
+      (pkg) => pkg.id === "premium",
+    );
+
+    if (premiumPackage) {
+      setHasMultiCountryUpsell(true);
+      setSelectedPackage(premiumPackage);
+      await updateStripeForm(premiumPackage, additionalPrintedPhotoNumber);
+    }
   };
 
   const handleStripeFormSubmit: FormEventHandler<HTMLFormElement> = async (
@@ -405,18 +416,39 @@ function MakePhotoView() {
 
   useEffect(() => {
     const specCodeParam = searchParams.get("specCode");
-    if (!specCodeParam) {
-      return;
+    if (specCodeParam) {
+      const specCode = specCodeFromString(specCodeParam);
+      if (specCode !== undefined) {
+        const spec = allPhotoSpecs[specCode];
+        setSelectedSpec(spec);
+        setIsSpecPreselected(true); // Mark as preselected to hide selection UI
+      }
     }
 
-    const specCode = specCodeFromString(specCodeParam);
-    if (specCode === undefined) {
-      return;
+    // Handle the 'type' parameter to set the correct package
+    const typeParam = searchParams.get("type");
+    if (typeParam) {
+      if (typeParam === "multi") {
+        // Set to premium package (£15.20)
+        const premiumPackage = constants.productPackages.find(
+          (pkg) => pkg.id === "premium",
+        );
+        if (premiumPackage) {
+          setSelectedPackage(premiumPackage);
+          // DO NOT auto-set hasMultiCountryUpsell - let user click upgrade button
+        }
+      } else if (typeParam === "uk" || typeParam === "single") {
+        // Set to standard package (£8.88)
+        const standardPackage = constants.productPackages.find(
+          (pkg) => pkg.id === "standard",
+        );
+        if (standardPackage) {
+          setSelectedPackage(standardPackage);
+          // Keep hasMultiCountryUpsell at default (false)
+        }
+      }
     }
-
-    const spec = allPhotoSpecs[specCode];
-    setSelectedSpec(spec);
-  }, []);
+  }, [searchParams]);
 
   useEffect(() => {
     const initStripe = async () => {
@@ -566,100 +598,146 @@ function MakePhotoView() {
                 Upload Your Photo
               </h2>
 
-              {/* Photo Spec Selection */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Select Photo Type:
-                </label>
-                <div className="grid md:grid-cols-2 gap-4 mb-4">
-                  {specOptions.map((spec) => (
-                    <div
-                      key={spec.specCode}
-                      onClick={() => setSelectedSpec(spec)}
-                      className={`p-4 border-2 rounded-lg cursor-pointer transition-colors ${
-                        selectedSpec.specCode === spec.specCode
-                          ? "border-blue-600 bg-blue-50"
-                          : "border-gray-200 hover:border-gray-300"
-                      }`}
+              {/* Photo Spec Selection - Collapsed when preselected */}
+              {isSpecPreselected ? (
+                /* Minimized selection display when coming from landing page */
+                <div className="mb-6">
+                  <div className="p-4 bg-blue-50 border-2 border-blue-200 rounded-lg">
+                    <div className="flex justify-between items-center mb-2">
+                      <div>
+                        <span className="text-sm text-blue-800 font-semibold">
+                          Document Type:
+                        </span>
+                        <span className="ml-2 text-lg font-bold text-blue-900">
+                          {selectedSpec.specCodeInEnglish}
+                        </span>
+                      </div>
+                      <span className="text-blue-600 font-bold text-lg">
+                        {formattedPrice}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => setIsSpecPreselected(false)}
+                      className="text-sm text-blue-600 hover:text-blue-800 underline flex items-center gap-1"
                     >
+                      <Search className="h-3 w-3" />
+                      Change photo type
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                /* Full selection UI when user navigates directly */
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Select Photo Type:
+                  </label>
+                  <div className="grid md:grid-cols-2 gap-4 mb-4">
+                    {specOptions.map((spec) => (
+                      <div
+                        key={spec.specCode}
+                        onClick={() => setSelectedSpec(spec)}
+                        className={`p-4 border-2 rounded-lg cursor-pointer transition-colors ${
+                          selectedSpec.specCode === spec.specCode
+                            ? "border-blue-600 bg-blue-50"
+                            : "border-gray-200 hover:border-gray-300"
+                        }`}
+                      >
+                        <div className="flex justify-between items-center">
+                          <span className="font-medium text-gray-900">{`${spec.specCodeInEnglish} Photo`}</span>
+                          <span className="text-blue-600 font-bold">
+                            {formattedPrice}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Search Other Types */}
+                  <div className="relative">
+                    <div className="flex items-center space-x-2 p-4 border-2 border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
+                      <Search className="h-5 w-5 text-gray-400" />
+                      <input
+                        type="text"
+                        placeholder="Search for other photo types (e.g., China Visa, UK Passport)..."
+                        value={searchQuery}
+                        onChange={handleSearchInputChange}
+                        className="flex-1 outline-none text-gray-900 placeholder-gray-500"
+                      />
+                      {searchQuery && (
+                        <button
+                          onClick={clearSearch}
+                          className="text-gray-400 hover:text-gray-600 transition-colors"
+                        >
+                          <X className="h-5 w-5" />
+                        </button>
+                      )}
+                    </div>
+
+                    {showSearchResults && (
+                      <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto z-10">
+                        {filteredSpecs.length > 0 ? (
+                          filteredSpecs.slice(0, 10).map((spec) => (
+                            <button
+                              key={spec.specCode}
+                              onClick={() => handleSpecSelect(spec)}
+                              className="w-full text-left p-3 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0"
+                            >
+                              <div className="flex justify-between items-center">
+                                <span className="font-medium text-gray-900">{`${spec.specCodeInEnglish} Photo`}</span>
+                                <span className="text-blue-600 font-bold">
+                                  {formattedPrice}
+                                </span>
+                              </div>
+                            </button>
+                          ))
+                        ) : (
+                          <div className="p-3 text-gray-500 text-center">
+                            No photo types found matching "{searchQuery}"
+                          </div>
+                        )}
+                        {filteredSpecs.length > 10 && (
+                          <div className="p-3 text-gray-500 text-center text-sm border-t border-gray-100">
+                            Showing first 10 results. Refine your search for
+                            more specific results.
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Selected Spec Display */}
+                  {selectedSpec && (
+                    <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                       <div className="flex justify-between items-center">
-                        <span className="font-medium text-gray-900">{`${spec.specCodeInEnglish} Photo`}</span>
+                        <span className="text-sm text-blue-800">
+                          <strong>Selected:</strong>{" "}
+                          {selectedSpec.specCodeInEnglish}
+                        </span>
                         <span className="text-blue-600 font-bold">
                           {formattedPrice}
                         </span>
                       </div>
                     </div>
-                  ))}
-                </div>
-
-                {/* Search Other Types */}
-                <div className="relative">
-                  <div className="flex items-center space-x-2 p-4 border-2 border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
-                    <Search className="h-5 w-5 text-gray-400" />
-                    <input
-                      type="text"
-                      placeholder="Search for other photo types (e.g., China Visa, UK Passport)..."
-                      value={searchQuery}
-                      onChange={handleSearchInputChange}
-                      className="flex-1 outline-none text-gray-900 placeholder-gray-500"
-                    />
-                    {searchQuery && (
-                      <button
-                        onClick={clearSearch}
-                        className="text-gray-400 hover:text-gray-600 transition-colors"
-                      >
-                        <X className="h-5 w-5" />
-                      </button>
-                    )}
-                  </div>
-
-                  {showSearchResults && (
-                    <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto z-10">
-                      {filteredSpecs.length > 0 ? (
-                        filteredSpecs.slice(0, 10).map((spec) => (
-                          <button
-                            key={spec.specCode}
-                            onClick={() => handleSpecSelect(spec)}
-                            className="w-full text-left p-3 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0"
-                          >
-                            <div className="flex justify-between items-center">
-                              <span className="font-medium text-gray-900">{`${spec.specCodeInEnglish} Photo`}</span>
-                              <span className="text-blue-600 font-bold">
-                                {formattedPrice}
-                              </span>
-                            </div>
-                          </button>
-                        ))
-                      ) : (
-                        <div className="p-3 text-gray-500 text-center">
-                          No photo types found matching "{searchQuery}"
-                        </div>
-                      )}
-                      {filteredSpecs.length > 10 && (
-                        <div className="p-3 text-gray-500 text-center text-sm border-t border-gray-100">
-                          Showing first 10 results. Refine your search for more
-                          specific results.
-                        </div>
-                      )}
-                    </div>
                   )}
                 </div>
+              )}
 
-                {/* Selected Spec Display */}
-                {selectedSpec && (
-                  <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-blue-800">
-                        <strong>Selected:</strong>{" "}
-                        {selectedSpec.specCodeInEnglish}
-                      </span>
-                      <span className="text-blue-600 font-bold">
-                        {formattedPrice}
-                      </span>
-                    </div>
-                  </div>
-                )}
-              </div>
+              {/* Multi-Country Upsell - Strategic Placement */}
+              {selectedPackage.id === "standard" && (
+                <MultiCountryUpsellButton
+                  onUpgrade={handleMultiCountryUpgrade}
+                  isUpgraded={hasMultiCountryUpsell}
+                  upgradePrice={formatPrice(
+                    (constants.productPackages.find(
+                      (pkg) => pkg.id === "premium",
+                    )?.priceCents || 1520) -
+                      (constants.productPackages.find(
+                        (pkg) => pkg.id === "standard",
+                      )?.priceCents || 888),
+                    "gbp",
+                  )}
+                />
+              )}
 
               {/* Photo Requirements */}
               <div className="mb-8 p-6 bg-blue-50 border border-blue-200 rounded-lg">
@@ -834,20 +912,54 @@ function MakePhotoView() {
 
                   {/* Action buttons when processed photo is ready */}
                   {processedPhoto && (
-                    <div className="mt-6 flex flex-col md:flex-row justify-center gap-4">
-                      <button
-                        onClick={() => setStep("purchase")}
-                        className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
-                      >
-                        I Like It - Place Order
-                      </button>
-                      <button
-                        onClick={resetToUpload}
-                        className="bg-gray-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-gray-700 transition-colors"
-                      >
-                        Retake Photo
-                      </button>
-                    </div>
+                    <>
+                      <div className="mt-6 flex flex-col md:flex-row justify-center gap-4">
+                        <button
+                          onClick={() => setStep("purchase")}
+                          className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                        >
+                          I Like It - Place Order
+                        </button>
+                        <button
+                          onClick={resetToUpload}
+                          className="bg-gray-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-gray-700 transition-colors"
+                        >
+                          Retake Photo
+                        </button>
+                      </div>
+
+                      {/* Alternative Option: Email Submission */}
+                      <div className="mt-6 p-4 bg-gray-50 border border-gray-300 rounded-lg">
+                        <div className="flex items-start space-x-3">
+                          <AlertCircle className="h-5 w-5 text-gray-600 flex-shrink-0 mt-1" />
+                          <div className="flex-1">
+                            <h4 className="font-medium text-gray-800 mb-2">
+                              Prefer to Send Your Photo via Email?
+                            </h4>
+                            <p className="text-gray-600 text-sm mb-3">
+                              You can also email your photo after payment and
+                              we'll process it manually.
+                            </p>
+                            <button
+                              onClick={() => {
+                                setRequestHumanReview(true);
+                                setStep("purchase");
+                              }}
+                              className={`px-5 py-2 rounded-lg font-medium transition-colors text-sm ${
+                                requestHumanReview
+                                  ? "bg-green-100 text-green-800 border border-green-300 cursor-default"
+                                  : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-100"
+                              }`}
+                              disabled={requestHumanReview}
+                            >
+                              {requestHumanReview
+                                ? "✓ Selected"
+                                : "Email Photo Instead"}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </>
                   )}
                 </div>
               )}
@@ -979,6 +1091,18 @@ function MakePhotoView() {
               </button>
             </div>
 
+            {/* Email Submission Option Status */}
+            {requestHumanReview && (
+              <div className="mb-6 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="h-5 w-5 text-blue-600" />
+                  <span className="font-medium text-blue-900 text-sm">
+                    Email submission selected - instructions below
+                  </span>
+                </div>
+              </div>
+            )}
+
             {/* Photo Preview in Purchase Step */}
             <div className="mb-8 p-6 bg-gray-50 rounded-lg">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
@@ -1091,6 +1215,56 @@ function MakePhotoView() {
                 {paymentMessage}
               </p>
             </form>
+
+            {/* Email Submission Instructions - Show when selected */}
+            {requestHumanReview && (
+              <div className="mb-8 p-5 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-start space-x-3 mb-3">
+                  <CheckCircle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <h3 className="text-base font-semibold text-blue-900 mb-2">
+                      Email Submission Instructions
+                    </h3>
+                    <p className="text-blue-800 text-sm mb-3">
+                      After completing payment, send your photo to:
+                    </p>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-lg p-4 border border-blue-200">
+                  <div className="space-y-3">
+                    <div>
+                      <p className="text-xs text-gray-600 mb-1">
+                        Email Address:
+                      </p>
+                      <div className="bg-blue-100 px-3 py-2 rounded border border-blue-300">
+                        <p className="text-blue-900 font-mono font-semibold text-sm">
+                          wallington.cameras@yahoo.com
+                        </p>
+                      </div>
+                    </div>
+
+                    <div>
+                      <p className="text-xs text-gray-600 mb-1">
+                        Include in your email:
+                      </p>
+                      <ul className="text-sm text-gray-700 space-y-1 ml-4 list-disc">
+                        <li>Your order ID (received after payment)</li>
+                        <li>Document type: {selectedSpec.specCodeInEnglish}</li>
+                        <li>Any special requirements</li>
+                      </ul>
+                    </div>
+
+                    <div className="pt-2 border-t border-blue-200">
+                      <p className="text-xs text-gray-600">
+                        We'll process your photo and send the final result
+                        within 24 hours.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {selectedPackage.isPickUp ? (
               <div className="bg-blue-50 rounded-lg p-6">

@@ -17,6 +17,7 @@ import { compressImageFile } from "../utils/compressImage";
 import { fileToBase64 } from "../utils/fileToBase64";
 import { idpSaasService } from "../data/network/IdpSaasService";
 import { constants } from "../constants";
+import { formatPrice } from "../utils/formatPrice";
 
 interface DocumentPhotoModalProps {
   isOpen: boolean;
@@ -510,12 +511,12 @@ export default function DocumentPhotoModal({
                   onClick={handlePayment}
                   disabled={isPaymentProcessing}
                   className="w-full bg-green-600 text-white px-6 py-4 rounded-lg font-bold hover:bg-green-700 disabled:bg-gray-400 transition-colors flex items-center justify-center gap-2"
-                  aria-label="Proceed to payment for £8.88"
+                  aria-label={`Proceed to payment for ${formatPrice(constants.productPackages.find((pkg) => pkg.id === "standard")?.priceCents || 888, "gbp")}`}
                 >
                   <CreditCard className="h-5 w-5" aria-hidden="true" />
                   {isPaymentProcessing
                     ? "Processing..."
-                    : "Pay £8.88 & Get Code"}
+                    : `Pay ${formatPrice(constants.productPackages.find((pkg) => pkg.id === "standard")?.priceCents || 888, "gbp")} & Get Code`}
                 </button>
               )}
 
