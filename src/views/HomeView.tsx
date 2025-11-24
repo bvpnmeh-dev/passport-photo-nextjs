@@ -23,7 +23,7 @@ function HomeView() {
     : formatPrice(888, "gbp");
   const premiumPrice = premiumPackage
     ? formatPrice(premiumPackage.priceCents, premiumPackage.currency)
-    : formatPrice(1520, "gbp");
+    : formatPrice(1099, "gbp");
   const [dvlaOpen, setDvlaOpen] = React.useState(false);
   const [modalOpen, setModalOpen] = React.useState(false);
   const [selectedDocument, setSelectedDocument] = React.useState({

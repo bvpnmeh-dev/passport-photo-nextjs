@@ -50,7 +50,7 @@ export const constants = {
       id: "premium",
       name: process.env.NEXT_PUBLIC_PREMIUM_PKG_NAME || "Premium",
       priceCents:
-        Number(process.env.NEXT_PUBLIC_PREMIUM_PKG_PRICE_IN_CENT) || 1520,
+        Number(process.env.NEXT_PUBLIC_PREMIUM_PKG_PRICE_IN_CENT) || 1099,
       currency: (process.env.NEXT_PUBLIC_PREMIUM_PKG_CURRENCY ||
         "gbp") as "gbp",
       description: [

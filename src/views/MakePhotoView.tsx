@@ -429,7 +429,7 @@ function MakePhotoView() {
     const typeParam = searchParams.get("type");
     if (typeParam) {
       if (typeParam === "multi") {
-        // Set to premium package (£15.20)
+        // Set to premium package (£10.99)
         const premiumPackage = constants.productPackages.find(
           (pkg) => pkg.id === "premium",
         );
@@ -730,7 +730,7 @@ function MakePhotoView() {
                   upgradePrice={formatPrice(
                     (constants.productPackages.find(
                       (pkg) => pkg.id === "premium",
-                    )?.priceCents || 1520) -
+                    )?.priceCents || 1099) -
                       (constants.productPackages.find(
                         (pkg) => pkg.id === "standard",
                       )?.priceCents || 888),
